@@ -502,6 +502,24 @@
 				}
 			],
 			"id": "50455262-18176321-aa6f-4129-838a-f57757508360"
+		},
+		{
+			"name": "Settlements",
+			"item": [
+				{
+					"name": "Settlement Suggestions (N-way)",
+					"id": "50455262-d6c807c1-c1a0-447d-b0cc-13fea2b68199",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				}
+			],
+			"id": "50455262-c1b3546c-f320-4f95-9f50-ab6d26abf00e"
 		}
 	],
 	"auth": {

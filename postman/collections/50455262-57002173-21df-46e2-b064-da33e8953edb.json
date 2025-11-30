@@ -372,8 +372,21 @@
 			"id": "50455262-f3444c3b-56ed-49b7-9aba-d5e75e83e480"
 		},
 		{
-			"name": "New Folder",
-			"item": [],
+			"name": "Trip Members",
+			"item": [
+				{
+					"name": "New Request",
+					"id": "50455262-aeeb0cfe-ae67-4c13-8553-5ee9a6d445d1",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				}
+			],
 			"id": "50455262-b4bc2183-f35a-4eb5-9d60-2e3cd8028819"
 		}
 	],

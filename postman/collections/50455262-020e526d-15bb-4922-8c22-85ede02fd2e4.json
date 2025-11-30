@@ -28,11 +28,12 @@
 							}
 						},
 						"url": {
-							"raw": "{{base_url}}api/register",
+							"raw": "{{base_url}}/api/register",
 							"host": [
-								"{{base_url}}api"
+								"{{base_url}}"
 							],
 							"path": [
+								"api",
 								"register"
 							]
 						}

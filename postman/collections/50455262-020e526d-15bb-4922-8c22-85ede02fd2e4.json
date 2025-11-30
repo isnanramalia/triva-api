@@ -480,7 +480,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"type": "text/javascript",
+								"id": "4e8e605f-aa7c-4507-b67b-8ab35d099005",
 								"exec": [
 									"pm.test(\"Status code is 200\", function () {",
 									"    pm.response.to.have.status(200);",
@@ -501,7 +501,9 @@
 									"    pm.environment.set(\"member_id\", members[0].id);",
 									"}"
 								],
-								"id": "4e8e605f-aa7c-4507-b67b-8ab35d099005"
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
 							}
 						}
 					],
@@ -511,7 +513,14 @@
 					},
 					"request": {
 						"auth": {
-							"type": "inherit"
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
 						},
 						"method": "GET",
 						"header": [
@@ -534,7 +543,69 @@
 						},
 						"description": "Menampilkan daftar member (user + guest) untuk satu trip."
 					},
-					"response": []
+					"response": [
+						{
+							"id": "50455262-67f7b10e-9d2f-44be-8a73-5e873f352dc7",
+							"name": "List Members",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/api/trips/{{trip_id}}/members",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"trips",
+										"{{trip_id}}",
+										"members"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": null,
+							"header": [
+								{
+									"key": "Host",
+									"value": "127.0.0.1:8000"
+								},
+								{
+									"key": "Connection",
+									"value": "close"
+								},
+								{
+									"key": "X-Powered-By",
+									"value": "PHP/8.2.12"
+								},
+								{
+									"key": "Cache-Control",
+									"value": "no-cache, private"
+								},
+								{
+									"key": "Date",
+									"value": "Sun, 30 Nov 2025 06:30:52 GMT"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Access-Control-Allow-Origin",
+									"value": "*"
+								}
+							],
+							"cookie": [],
+							"responseTime": null,
+							"body": "[\n    {\n        \"id\": 1,\n        \"trip_id\": 1,\n        \"user_id\": 1,\n        \"guest_name\": null,\n        \"guest_contact\": null,\n        \"role\": \"admin\",\n        \"balance\": \"0.00\",\n        \"created_at\": \"2025-11-30T05:52:04.000000Z\",\n        \"updated_at\": \"2025-11-30T05:52:04.000000Z\",\n        \"user\": {\n            \"id\": 1,\n            \"name\": \"Test User\",\n            \"email\": \"test@example.com\",\n            \"email_verified_at\": \"2025-11-30T03:21:21.000000Z\",\n            \"created_at\": \"2025-11-30T03:21:21.000000Z\",\n            \"updated_at\": \"2025-11-30T03:21:21.000000Z\"\n        }\n    },\n    {\n        \"id\": 2,\n        \"trip_id\": 1,\n        \"user_id\": 2,\n        \"guest_name\": null,\n        \"guest_contact\": null,\n        \"role\": \"member\",\n        \"balance\": \"0.00\",\n        \"created_at\": \"2025-11-30T06:30:32.000000Z\",\n        \"updated_at\": \"2025-11-30T06:30:32.000000Z\",\n        \"user\": {\n            \"id\": 2,\n            \"name\": \"teman1\",\n            \"email\": \"teman1@gmail.com\",\n            \"email_verified_at\": null,\n            \"created_at\": \"2025-11-30T06:29:19.000000Z\",\n            \"updated_at\": \"2025-11-30T06:29:19.000000Z\"\n        }\n    }\n]"
+						}
+					]
 				},
 				{
 					"name": "Add Member (User by Email)",

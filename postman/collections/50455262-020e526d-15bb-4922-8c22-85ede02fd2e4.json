@@ -1199,7 +1199,70 @@
 						},
 						"description": "Mengambil rekomendasi settlement berdasarkan balance saat ini (n-way simplification)."
 					},
-					"response": []
+					"response": [
+						{
+							"id": "50455262-915bd071-5f26-493d-8e61-888eb1da98e8",
+							"name": "Settlement Suggestions (N-Way)",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/api/trips/{{trip_id}}/settlements/suggestions",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"trips",
+										"{{trip_id}}",
+										"settlements",
+										"suggestions"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": null,
+							"header": [
+								{
+									"key": "Host",
+									"value": "127.0.0.1:8000"
+								},
+								{
+									"key": "Connection",
+									"value": "close"
+								},
+								{
+									"key": "X-Powered-By",
+									"value": "PHP/8.2.12"
+								},
+								{
+									"key": "Cache-Control",
+									"value": "no-cache, private"
+								},
+								{
+									"key": "Date",
+									"value": "Sun, 30 Nov 2025 06:32:17 GMT"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Access-Control-Allow-Origin",
+									"value": "*"
+								}
+							],
+							"cookie": [],
+							"responseTime": null,
+							"body": "[\n    {\n        \"from_member_id\": 2,\n        \"to_member_id\": 1,\n        \"amount\": 50000\n    },\n    {\n        \"from_member_id\": 3,\n        \"to_member_id\": 1,\n        \"amount\": 50000\n    }\n]"
+						}
+					]
 				},
 				{
 					"name": "Create Settlement",

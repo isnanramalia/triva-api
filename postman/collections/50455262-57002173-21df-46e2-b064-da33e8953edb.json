@@ -477,7 +477,7 @@
 					"response": []
 				},
 				{
-					"name": "Delete Transactions",
+					"name": "Delete Transaction",
 					"id": "50455262-e18aa2b1-1abf-4a73-9843-e686bc7b3e89",
 					"protocolProfileBehavior": {
 						"disableBodyPruning": true
@@ -489,7 +489,7 @@
 					"response": []
 				},
 				{
-					"name": "New Request",
+					"name": "Show Transaction Detail",
 					"id": "50455262-2d81703d-3ba0-4882-9bc0-66457740dd20",
 					"protocolProfileBehavior": {
 						"disableBodyPruning": true

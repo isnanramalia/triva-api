@@ -542,7 +542,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"type": "text/javascript",
+								"id": "7baf47fb-7d40-4838-ae6d-b22f7880061e",
 								"exec": [
 									"pm.test(\"Status code is 200 or 201\", function () {",
 									"    pm.expect([200,201]).to.include(pm.response.code);",
@@ -559,7 +559,9 @@
 									"    pm.environment.set(\"member_id_user\", member.id);",
 									"}"
 								],
-								"id": "7baf47fb-7d40-4838-ae6d-b22f7880061e"
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
 							}
 						}
 					],
@@ -569,7 +571,14 @@
 					},
 					"request": {
 						"auth": {
-							"type": "inherit"
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
 						},
 						"method": "POST",
 						"header": [

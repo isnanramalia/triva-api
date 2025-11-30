@@ -357,7 +357,7 @@
 					"response": []
 				},
 				{
-					"name": "Trip",
+					"name": "Delete Trip",
 					"id": "50455262-673371e4-52fe-4ed6-8d6e-eddd0945e02c",
 					"protocolProfileBehavior": {
 						"disableBodyPruning": true
@@ -370,6 +370,11 @@
 				}
 			],
 			"id": "50455262-f3444c3b-56ed-49b7-9aba-d5e75e83e480"
+		},
+		{
+			"name": "New Folder",
+			"item": [],
+			"id": "50455262-b4bc2183-f35a-4eb5-9d60-2e3cd8028819"
 		}
 	],
 	"auth": {

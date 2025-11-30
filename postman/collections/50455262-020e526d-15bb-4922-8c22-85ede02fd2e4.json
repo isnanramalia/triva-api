@@ -283,7 +283,67 @@
 						},
 						"description": "Menampilkan semua trip yang diikuti user saat ini (via trip_members)."
 					},
-					"response": []
+					"response": [
+						{
+							"id": "50455262-af78e21f-11ab-485e-8b3b-eac1145e44c6",
+							"name": "List Trips",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/api/trips",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"trips"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": null,
+							"header": [
+								{
+									"key": "Host",
+									"value": "127.0.0.1:8000"
+								},
+								{
+									"key": "Connection",
+									"value": "close"
+								},
+								{
+									"key": "X-Powered-By",
+									"value": "PHP/8.2.12"
+								},
+								{
+									"key": "Cache-Control",
+									"value": "no-cache, private"
+								},
+								{
+									"key": "Date",
+									"value": "Sun, 30 Nov 2025 06:32:54 GMT"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Access-Control-Allow-Origin",
+									"value": "*"
+								}
+							],
+							"cookie": [],
+							"responseTime": null,
+							"body": "[\n    {\n        \"id\": 1,\n        \"owner_id\": 1,\n        \"name\": \"Bali Trip 2025\",\n        \"description\": \"Liburan bareng geng kampus\",\n        \"currency_code\": \"IDR\",\n        \"start_date\": \"2025-12-01T00:00:00.000000Z\",\n        \"end_date\": \"2025-12-05T00:00:00.000000Z\",\n        \"public_summary_token\": null,\n        \"status\": \"planning\",\n        \"created_at\": \"2025-11-30T05:52:04.000000Z\",\n        \"updated_at\": \"2025-11-30T05:52:04.000000Z\",\n        \"members_count\": 3\n    }\n]"
+						}
+					]
 				},
 				{
 					"name": "Create Trip",

@@ -438,8 +438,21 @@
 			"id": "50455262-b4bc2183-f35a-4eb5-9d60-2e3cd8028819"
 		},
 		{
-			"name": "New Folder",
-			"item": [],
+			"name": "Transactions",
+			"item": [
+				{
+					"name": "New Request",
+					"id": "50455262-a150bc96-3df5-407b-be06-03d0a45a018b",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				}
+			],
 			"id": "50455262-18176321-aa6f-4129-838a-f57757508360"
 		}
 	],

@@ -345,7 +345,7 @@
 					"response": []
 				},
 				{
-					"name": "New Request",
+					"name": "Trip Detail",
 					"id": "50455262-d5421985-d41e-4d7c-b5cf-b8a5d78d7ba9",
 					"protocolProfileBehavior": {
 						"disableBodyPruning": true

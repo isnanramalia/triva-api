@@ -475,6 +475,18 @@
 						"header": []
 					},
 					"response": []
+				},
+				{
+					"name": "Delete Transactions",
+					"id": "50455262-e18aa2b1-1abf-4a73-9843-e686bc7b3e89",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
 				}
 			],
 			"id": "50455262-18176321-aa6f-4129-838a-f57757508360"

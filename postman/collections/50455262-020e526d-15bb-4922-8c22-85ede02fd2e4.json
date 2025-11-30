@@ -291,7 +291,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"type": "text/javascript",
+								"id": "5b12190b-7aea-4b7f-96d7-42ad109d4ded",
 								"exec": [
 									"pm.test(\"Status code is 201\", function () {",
 									"    pm.response.to.have.status(201);",
@@ -313,7 +313,9 @@
 									"    pm.environment.set(\"trip_id\", trip.id);",
 									"}"
 								],
-								"id": "5b12190b-7aea-4b7f-96d7-42ad109d4ded"
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
 							}
 						}
 					],
@@ -323,7 +325,14 @@
 					},
 					"request": {
 						"auth": {
-							"type": "inherit"
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
 						},
 						"method": "POST",
 						"header": [

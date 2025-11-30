@@ -387,7 +387,7 @@
 					"response": []
 				},
 				{
-					"name": "New Request",
+					"name": "Add Member (user by email)",
 					"id": "50455262-cea1ddc8-2c1f-4ffe-a2aa-8d99458aafb2",
 					"protocolProfileBehavior": {
 						"disableBodyPruning": true

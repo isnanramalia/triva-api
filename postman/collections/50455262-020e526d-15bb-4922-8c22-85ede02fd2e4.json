@@ -1207,7 +1207,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"type": "text/javascript",
+								"id": "062833e8-3e1c-4b37-b003-5a99a3a29378",
 								"exec": [
 									"pm.test(\"Status code is 201\", function () {",
 									"    pm.response.to.have.status(201);",
@@ -1225,7 +1225,9 @@
 									"    pm.expect(st.status).to.eql(\"confirmed\");",
 									"});"
 								],
-								"id": "062833e8-3e1c-4b37-b003-5a99a3a29378"
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
 							}
 						}
 					],
@@ -1235,7 +1237,14 @@
 					},
 					"request": {
 						"auth": {
-							"type": "inherit"
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
 						},
 						"method": "POST",
 						"header": [
@@ -1266,7 +1275,77 @@
 						},
 						"description": "Mencatat settlement yang telah dilakukan (MVP: langsung status confirmed). Menggunakan nilai dari suggestions."
 					},
-					"response": []
+					"response": [
+						{
+							"id": "50455262-c50ebbbd-be25-4110-bf20-89788cb7e739",
+							"name": "Create Settlement",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"from_member_id\": {{settle_from_member_id}},\n  \"to_member_id\": {{settle_to_member_id}},\n  \"amount\": {{settle_amount}}\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/trips/{{trip_id}}/settlements",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"trips",
+										"{{trip_id}}",
+										"settlements"
+									]
+								}
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": null,
+							"header": [
+								{
+									"key": "Host",
+									"value": "127.0.0.1:8000"
+								},
+								{
+									"key": "Connection",
+									"value": "close"
+								},
+								{
+									"key": "X-Powered-By",
+									"value": "PHP/8.2.12"
+								},
+								{
+									"key": "Cache-Control",
+									"value": "no-cache, private"
+								},
+								{
+									"key": "Date",
+									"value": "Sun, 30 Nov 2025 06:32:35 GMT"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Access-Control-Allow-Origin",
+									"value": "*"
+								}
+							],
+							"cookie": [],
+							"responseTime": null,
+							"body": "{\n    \"trip_id\": 1,\n    \"from_member_id\": 2,\n    \"to_member_id\": 1,\n    \"amount\": \"50000.00\",\n    \"status\": \"confirmed\",\n    \"created_by_member_id\": 1,\n    \"confirmed_at\": \"2025-11-30T06:32:35.000000Z\",\n    \"updated_at\": \"2025-11-30T06:32:35.000000Z\",\n    \"created_at\": \"2025-11-30T06:32:35.000000Z\",\n    \"id\": 1,\n    \"from_member\": {\n        \"id\": 2,\n        \"trip_id\": 1,\n        \"user_id\": 2,\n        \"guest_name\": null,\n        \"guest_contact\": null,\n        \"role\": \"member\",\n        \"balance\": \"0.00\",\n        \"created_at\": \"2025-11-30T06:30:32.000000Z\",\n        \"updated_at\": \"2025-11-30T06:32:35.000000Z\"\n    },\n    \"to_member\": {\n        \"id\": 1,\n        \"trip_id\": 1,\n        \"user_id\": 1,\n        \"guest_name\": null,\n        \"guest_contact\": null,\n        \"role\": \"admin\",\n        \"balance\": \"50000.00\",\n        \"created_at\": \"2025-11-30T05:52:04.000000Z\",\n        \"updated_at\": \"2025-11-30T06:32:35.000000Z\"\n    }\n}"
+						}
+					]
 				}
 			],
 			"id": "50455262-2c429681-c844-4d51-9877-592c10ab86b8"

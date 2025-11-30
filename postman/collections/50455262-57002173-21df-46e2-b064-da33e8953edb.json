@@ -441,7 +441,7 @@
 			"name": "Transactions",
 			"item": [
 				{
-					"name": "New Request",
+					"name": "List Transactions",
 					"id": "50455262-a150bc96-3df5-407b-be06-03d0a45a018b",
 					"protocolProfileBehavior": {
 						"disableBodyPruning": true

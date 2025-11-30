@@ -2,48 +2,54 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Laravel\Sanctum\HasApiTokens;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, HasApiTokens;
+    use HasApiTokens, HasFactory, Notifiable;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
     protected $fillable = [
         'name',
         'email',
         'password',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+    ];
+
+    // === RELATIONSHIPS ===
+
+    // user sebagai pemilik trip
+    public function ownedTrips()
     {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
+        return $this->hasMany(Trip::class, 'owner_id');
+    }
+
+    // user sebagai member banyak trip (via trip_members)
+    public function tripMembers()
+    {
+        return $this->hasMany(TripMember::class);
+    }
+
+    // user bisa akses trip yang dia ikuti via relasi hasManyThrough (optional)
+    public function trips()
+    {
+        return $this->hasManyThrough(
+            Trip::class,
+            TripMember::class,
+            'user_id', // FK di trip_members
+            'id',      // PK di trips
+            'id',      // PK di users
+            'trip_id'  // FK di trip_members
+        );
     }
 }

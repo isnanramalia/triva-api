@@ -374,10 +374,29 @@
 		{
 			"listen": "prerequest",
 			"script": {
-				"id": "1851d0c6-c46b-4b8c-92de-3f6ee4de22fe",
+				"id": "e803f505-6c57-44fa-ab71-2bf09a4a9f32",
 				"type": "text/javascript",
 				"requests": {},
 				"exec": [
+					"// Menambahkan header kustom ke setiap permintaan dalam koleksi ini\r",
+					"pm.request.headers.add({\r",
+					"    key: 'Nama-Header-Anda',\r",
+					"    value: 'Nilai-Header-Anda'\r",
+					"});\r",
+					"\r",
+					"// Contoh spesifik untuk Accept: application/json\r",
+					"pm.request.headers.add({\r",
+					"    key: 'Accept',\r",
+					"    value: 'application/json'\r",
+					"});\r",
+					"\r",
+					"// Contoh menambahkan token Bearer secara global dari variabel environment {{token}}\r",
+					"if (pm.environment.get(\"token\")) {\r",
+					"    pm.request.headers.add({\r",
+					"        key: 'Authorization',\r",
+					"        value: 'Bearer ' + pm.environment.get(\"token\")\r",
+					"    });\r",
+					"}\r",
 					""
 				]
 			}
@@ -385,7 +404,7 @@
 		{
 			"listen": "test",
 			"script": {
-				"id": "85aa1f05-9526-4509-b863-8b93d2749791",
+				"id": "d49ed26d-fac8-4487-97a7-e9fe7e616e44",
 				"type": "text/javascript",
 				"requests": {},
 				"exec": [

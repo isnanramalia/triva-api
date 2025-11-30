@@ -41,7 +41,7 @@
 					"response": [
 						{
 							"id": "50455262-36b00410-93b5-4bfe-8c6b-a47a9a5927a7",
-							"name": "New Request",
+							"name": "Register",
 							"originalRequest": {
 								"method": "POST",
 								"header": [],

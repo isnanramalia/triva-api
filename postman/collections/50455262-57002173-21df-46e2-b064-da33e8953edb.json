@@ -453,8 +453,20 @@
 					"response": []
 				},
 				{
-					"name": "New Request",
+					"name": "Create Transactions",
 					"id": "50455262-4088dc14-1e06-4091-90f5-7b8d718873ac",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "New Request",
+					"id": "50455262-66ef99a3-7e49-46b8-bfcc-ad7e24d90582",
 					"protocolProfileBehavior": {
 						"disableBodyPruning": true
 					},

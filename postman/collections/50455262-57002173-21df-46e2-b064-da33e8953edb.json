@@ -409,6 +409,18 @@
 						"header": []
 					},
 					"response": []
+				},
+				{
+					"name": "Remove Member",
+					"id": "50455262-dcb6d407-ee83-4077-9ae8-f83de55a9cdc",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
 				}
 			],
 			"id": "50455262-b4bc2183-f35a-4eb5-9d60-2e3cd8028819"

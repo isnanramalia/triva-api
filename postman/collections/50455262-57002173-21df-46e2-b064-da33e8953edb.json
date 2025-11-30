@@ -543,7 +543,7 @@
 					"response": []
 				},
 				{
-					"name": "New Request",
+					"name": "Confirm Settlement (optional)",
 					"id": "50455262-4cf96d38-f7a7-4984-ae44-a318ae5ac83a",
 					"protocolProfileBehavior": {
 						"disableBodyPruning": true

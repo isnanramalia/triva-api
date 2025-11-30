@@ -1,0 +1,647 @@
+{
+	"info": {
+		"_postman_id": "50455262-57002173-21df-46e2-b064-da33e8953edb",
+		"name": "Triva API",
+		"description": "# 🚀 Get started here\n\nThis template guides you through CRUD operations (GET, POST, PUT, DELETE), variables, and tests.\n\n## 🔖 **How to use this template**\n\n#### **Step 1: Send requests**\n\nRESTful APIs allow you to perform CRUD operations using the POST, GET, PUT, and DELETE HTTP methods.\n\nThis collection contains each of these [request](https://learning.postman.com/docs/sending-requests/requests/) types. Open each request and click \"Send\" to see what happens.\n\n#### **Step 2: View responses**\n\nObserve the response tab for status code (200 OK), response time, and size.\n\n#### **Step 3: Send new Body data**\n\nUpdate or add new data in \"Body\" in the POST request. Typically, Body data is also used in PUT request.\n\n```\n{\n    \"name\": \"Add your name in the body\"\n}\n\n ```\n\n#### **Step 4: Update the variable**\n\nVariables enable you to store and reuse values in Postman. We have created a [variable](https://learning.postman.com/docs/sending-requests/variables/) called `base_url` with the sample request [https://postman-api-learner.glitch.me](https://postman-api-learner.glitch.me). Replace it with your API endpoint to customize this collection.\n\n#### **Step 5: Add tests in the \"Scripts\" tab**\n\nAdding tests to your requests can help you confirm that your API is working as expected. You can write test scripts in JavaScript and view the output in the \"Test Results\" tab.\n\n<img src=\"https://content.pstmn.io/fa30ea0a-373d-4545-a668-e7b283cca343/aW1hZ2UucG5n\" alt=\"\" height=\"1530\" width=\"2162\">\n\n## 💪 Pro tips\n\n- Use folders to group related requests and organize the collection.\n    \n- Add more [scripts](https://learning.postman.com/docs/writing-scripts/intro-to-scripts/) to verify if the API works as expected and execute workflows.\n    \n\n## 💡Related templates\n\n[API testing basics](https://go.postman.co/redirect/workspace?type=personal&collectionTemplateId=e9a37a28-055b-49cd-8c7e-97494a21eb54&sourceTemplateId=ddb19591-3097-41cf-82af-c84273e56719)  \n[API documentation](https://go.postman.co/redirect/workspace?type=personal&collectionTemplateId=e9c28f47-1253-44af-a2f3-20dce4da1f18&sourceTemplateId=ddb19591-3097-41cf-82af-c84273e56719)  \n[Authorization methods](https://go.postman.co/redirect/workspace?type=personal&collectionTemplateId=31a9a6ed-4cdf-4ced-984c-d12c9aec1c27&sourceTemplateId=ddb19591-3097-41cf-82af-c84273e56719)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "7ae7fb15-aa5f-4d4e-a153-7f160ff73309",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"const json = pm.response.json();",
+									"",
+									"pm.test(\"User object has id and email\", function () {",
+									"    pm.expect(json).to.have.property(\"id\");",
+									"    pm.expect(json).to.have.property(\"email\");",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"id": "50455262-ef450393-1005-4e92-b797-1766706bab18",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer 1|HarwiM3DAMy3LuFkxICIHbqkKZXP8KBNM8NBs0wub9245867",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"email\": \"test@example.com\",\r\n  \"password\": \"password\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}me",
+							"host": [
+								"{{base_url}}me"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "1",
+									"disabled": true
+								}
+							]
+						},
+						"description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+					},
+					"response": []
+				},
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "4acd8436-7ed6-492c-bfd6-6293a0e92a6f",
+								"exec": [
+									"pm.test(\"Successful POST request\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+									"});",
+									"",
+									"const json = pm.response.json();",
+									"",
+									"pm.test(\"Response has token\", function () {",
+									"    pm.expect(json).to.have.property(\"token\");",
+									"});",
+									"",
+									"// simpan token ke environment",
+									"pm.environment.set(\"token\", json.token);",
+									"",
+									"// optional: simpan user id",
+									"if (json.user && json.user.id) {",
+									"    pm.environment.set(\"user_id\", json.user.id);",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"packages": {},
+								"type": "text/javascript"
+							}
+						}
+					],
+					"id": "50455262-36793062-5ca8-438c-a26c-9b25fd6d856d",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer 1|HarwiM3DAMy3LuFkxICIHbqkKZXP8KBNM8NBs0wub9245867",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"password\"\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}login",
+							"host": [
+								"{{baseUrl}}login"
+							]
+						},
+						"description": "This is a POST request, submitting data to an API via the request body. This request submits JSON data, and the data is reflected in the response.\n\nA successful POST request typically returns a `200 OK` or `201 Created` response code."
+					},
+					"response": []
+				},
+				{
+					"name": "Logout",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "db81b746-e7ee-4513-8c4e-0c40b00d422e",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"// clear token\r",
+									"pm.environment.unset(\"token\");\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"id": "50455262-76294e93-aeff-46f8-8787-58dec18ddaf1",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer 1|HarwiM3DAMy3LuFkxICIHbqkKZXP8KBNM8NBs0wub9245867",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{base_url}}logout",
+							"host": [
+								"{{base_url}}logout"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "1",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"id": "50455262-909da44f-76e9-42c3-9280-fa8cdd6449de",
+			"auth": {
+				"type": "bearer",
+				"bearer": [
+					{
+						"key": "token",
+						"value": "{{token}}",
+						"type": "string"
+					}
+				]
+			},
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "1ffe0ecf-c736-44d3-b2ab-7776d7c2d2e5",
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {},
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "6551238a-522c-4cdc-b85b-81765a30e258",
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {},
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "Trips",
+			"item": [
+				{
+					"name": "List Trips",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "d8f77376-277d-4b0e-a126-964611086dea",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"const data = pm.response.json();\r",
+									"\r",
+									"pm.test(\"Response is array\", function () {\r",
+									"    pm.expect(data).to.be.an(\"array\");\r",
+									"});\r",
+									"\r",
+									"// save first trip_id if exists\r",
+									"if (data.length > 0 && data[0].id) {\r",
+									"    pm.environment.set(\"trip_id\", data[0].id);\r",
+									"}\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"id": "50455262-88b5da53-b369-4e58-bb97-a899abb5fc0e",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}trips",
+							"host": [
+								"{{baseUrl}}trips"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Trip",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "33a5a074-af48-406a-8ff9-14cd03955dae",
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});\r",
+									"\r",
+									"const trip = pm.response.json();\r",
+									"\r",
+									"pm.test(\"Trip has id and name\", function () {\r",
+									"    pm.expect(trip).to.have.property(\"id\");\r",
+									"    pm.expect(trip).to.have.property(\"name\");\r",
+									"});\r",
+									"\r",
+									"// set trip_id\r",
+									"pm.environment.set(\"trip_id\", trip.id);\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"id": "50455262-96fa94b2-5b2e-4752-8d25-2aa171b03401",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Trip Bali 2025\",\r\n  \"description\": \"Liburan bareng geng kampus\",\r\n  \"currency_code\": \"IDR\",\r\n  \"start_date\": \"2025-12-01\",\r\n  \"end_date\": \"2025-12-05\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}trips",
+							"host": [
+								"{{baseUrl}}trips"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Trip Detail",
+					"id": "50455262-d5421985-d41e-4d7c-b5cf-b8a5d78d7ba9",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Trip",
+					"id": "50455262-673371e4-52fe-4ed6-8d6e-eddd0945e02c",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				}
+			],
+			"id": "50455262-f3444c3b-56ed-49b7-9aba-d5e75e83e480"
+		},
+		{
+			"name": "Trip Members",
+			"item": [
+				{
+					"name": "List Member",
+					"id": "50455262-aeeb0cfe-ae67-4c13-8553-5ee9a6d445d1",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "Add Member (user by email)",
+					"id": "50455262-cea1ddc8-2c1f-4ffe-a2aa-8d99458aafb2",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "Add Member (guest)",
+					"id": "50455262-96506c4f-4f3f-45eb-8c9d-9a0086f2c51a",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "Remove Member",
+					"id": "50455262-dcb6d407-ee83-4077-9ae8-f83de55a9cdc",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "Update Member (role, contact)",
+					"id": "50455262-70d79f80-55d1-436a-a2c2-b1d4ec1610f7",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				}
+			],
+			"id": "50455262-b4bc2183-f35a-4eb5-9d60-2e3cd8028819"
+		},
+		{
+			"name": "Transactions",
+			"item": [
+				{
+					"name": "List Transactions",
+					"id": "50455262-a150bc96-3df5-407b-be06-03d0a45a018b",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "Create Transactions",
+					"id": "50455262-4088dc14-1e06-4091-90f5-7b8d718873ac",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "Update Transaction",
+					"id": "50455262-66ef99a3-7e49-46b8-bfcc-ad7e24d90582",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Transaction",
+					"id": "50455262-e18aa2b1-1abf-4a73-9843-e686bc7b3e89",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "Show Transaction Detail",
+					"id": "50455262-2d81703d-3ba0-4882-9bc0-66457740dd20",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				}
+			],
+			"id": "50455262-18176321-aa6f-4129-838a-f57757508360"
+		},
+		{
+			"name": "Settlements",
+			"item": [
+				{
+					"name": "Settlement Suggestions (N-way)",
+					"id": "50455262-d6c807c1-c1a0-447d-b0cc-13fea2b68199",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "Create Settlement",
+					"id": "50455262-1c0ca203-a642-4f2d-b818-d92ba0f3f415",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "List Settlement",
+					"id": "50455262-ba077673-d242-4ec1-91f2-ab56f76dcade",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "Confirm Settlement (optional)",
+					"id": "50455262-4cf96d38-f7a7-4984-ae44-a318ae5ac83a",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				}
+			],
+			"id": "50455262-c1b3546c-f320-4f95-9f50-ab6d26abf00e"
+		},
+		{
+			"name": "Utility",
+			"item": [
+				{
+					"name": "Balances per Member",
+					"id": "50455262-f41f4e72-327a-4495-b4c1-f158162e8b1e",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "Public Summary (guest link)",
+					"id": "50455262-f46bf2ea-cfcf-4a31-8f56-6b5bec54788e",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				}
+			],
+			"id": "50455262-a4981334-2bc7-4608-8249-b90e6e2844b4"
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{token}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "408afc62-7a71-4965-a187-5c64c2a6c39b",
+				"type": "text/javascript",
+				"requests": {},
+				"exec": [
+					"// Tambahkan Accept: application/json\r",
+					"pm.request.headers.add({\r",
+					"    key: 'Accept',\r",
+					"    value: 'application/json'\r",
+					"});\r",
+					"\r",
+					"// Tambahkan Content-Type: application/json\r",
+					"// Catatan: Postman biasanya menangani ini secara otomatis jika Anda memilih 'Body' type JSON,\r",
+					"// tapi menambahkannya di sini memastikan konsistensi.\r",
+					"pm.request.headers.add({\r",
+					"    key: 'Content-Type',\r",
+					"    value: 'application/json'\r",
+					"});\r",
+					"\r",
+					"// Tambahkan Authorization: Bearer {{token}} jika token tersedia di environment\r",
+					"// var token = pm.environment.get(\"token\");\r",
+					"// if (token) {\r",
+					"//     pm.request.headers.add({\r",
+					"//         key: 'Authorization',\r",
+					"//         value: 'Bearer ' + token\r",
+					"//     });\r",
+					"// }\r",
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"id": "de281b7c-fdc6-4e30-a6ce-d6376b73c31a",
+				"type": "text/javascript",
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}

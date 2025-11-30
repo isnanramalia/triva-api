@@ -399,7 +399,7 @@
 					"response": []
 				},
 				{
-					"name": "New Request",
+					"name": "Add Member (guest)",
 					"id": "50455262-96506c4f-4f3f-45eb-8c9d-9a0086f2c51a",
 					"protocolProfileBehavior": {
 						"disableBodyPruning": true

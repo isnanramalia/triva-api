@@ -374,29 +374,32 @@
 		{
 			"listen": "prerequest",
 			"script": {
-				"id": "e803f505-6c57-44fa-ab71-2bf09a4a9f32",
+				"id": "408afc62-7a71-4965-a187-5c64c2a6c39b",
 				"type": "text/javascript",
 				"requests": {},
 				"exec": [
-					"// Menambahkan header kustom ke setiap permintaan dalam koleksi ini\r",
-					"pm.request.headers.add({\r",
-					"    key: 'Nama-Header-Anda',\r",
-					"    value: 'Nilai-Header-Anda'\r",
-					"});\r",
-					"\r",
-					"// Contoh spesifik untuk Accept: application/json\r",
+					"// Tambahkan Accept: application/json\r",
 					"pm.request.headers.add({\r",
 					"    key: 'Accept',\r",
 					"    value: 'application/json'\r",
 					"});\r",
 					"\r",
-					"// Contoh menambahkan token Bearer secara global dari variabel environment {{token}}\r",
-					"if (pm.environment.get(\"token\")) {\r",
-					"    pm.request.headers.add({\r",
-					"        key: 'Authorization',\r",
-					"        value: 'Bearer ' + pm.environment.get(\"token\")\r",
-					"    });\r",
-					"}\r",
+					"// Tambahkan Content-Type: application/json\r",
+					"// Catatan: Postman biasanya menangani ini secara otomatis jika Anda memilih 'Body' type JSON,\r",
+					"// tapi menambahkannya di sini memastikan konsistensi.\r",
+					"pm.request.headers.add({\r",
+					"    key: 'Content-Type',\r",
+					"    value: 'application/json'\r",
+					"});\r",
+					"\r",
+					"// Tambahkan Authorization: Bearer {{token}} jika token tersedia di environment\r",
+					"// var token = pm.environment.get(\"token\");\r",
+					"// if (token) {\r",
+					"//     pm.request.headers.add({\r",
+					"//         key: 'Authorization',\r",
+					"//         value: 'Bearer ' + token\r",
+					"//     });\r",
+					"// }\r",
 					""
 				]
 			}
@@ -404,7 +407,7 @@
 		{
 			"listen": "test",
 			"script": {
-				"id": "d49ed26d-fac8-4487-97a7-e9fe7e616e44",
+				"id": "de281b7c-fdc6-4e30-a6ce-d6376b73c31a",
 				"type": "text/javascript",
 				"requests": {},
 				"exec": [

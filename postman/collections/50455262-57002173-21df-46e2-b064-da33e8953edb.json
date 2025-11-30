@@ -375,8 +375,20 @@
 			"name": "Trip Members",
 			"item": [
 				{
-					"name": "New Request",
+					"name": "List Member",
 					"id": "50455262-aeeb0cfe-ae67-4c13-8553-5ee9a6d445d1",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "New Request",
+					"id": "50455262-cea1ddc8-2c1f-4ffe-a2aa-8d99458aafb2",
 					"protocolProfileBehavior": {
 						"disableBodyPruning": true
 					},

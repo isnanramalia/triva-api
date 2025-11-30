@@ -785,7 +785,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"type\": \"user\",\n  \"email\": \"temanmu@example.com\",\n  \"role\": \"member\"\n}"
+							"raw": "{\n  \"type\": \"user\",\n  \"email\": \"teman2@gmail.com\",\n  \"role\": \"member\"\n}"
 						},
 						"url": {
 							"raw": "{{base_url}}/api/trips/{{trip_id}}/members",

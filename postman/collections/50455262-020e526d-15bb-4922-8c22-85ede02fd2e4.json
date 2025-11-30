@@ -209,6 +209,18 @@
 						"description": "Logout dari token yang sedang aktif (token dihapus dari personal_access_tokens)."
 					},
 					"response": []
+				},
+				{
+					"name": "New Request",
+					"id": "50455262-fb185f33-ccaf-4e86-8e77-b57d868bc475",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
 				}
 			],
 			"id": "50455262-a34c2c1d-f0f3-45c2-9c52-badda64d0e31"

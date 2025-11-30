@@ -423,7 +423,7 @@
 					"response": []
 				},
 				{
-					"name": "Update Member",
+					"name": "Update Member (role, contact)",
 					"id": "50455262-70d79f80-55d1-436a-a2c2-b1d4ec1610f7",
 					"protocolProfileBehavior": {
 						"disableBodyPruning": true
@@ -436,6 +436,11 @@
 				}
 			],
 			"id": "50455262-b4bc2183-f35a-4eb5-9d60-2e3cd8028819"
+		},
+		{
+			"name": "New Folder",
+			"item": [],
+			"id": "50455262-18176321-aa6f-4129-838a-f57757508360"
 		}
 	],
 	"auth": {

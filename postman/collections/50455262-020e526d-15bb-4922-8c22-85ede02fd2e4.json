@@ -758,7 +758,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"type": "text/javascript",
+								"id": "8df69095-103d-4b54-9d41-ddeb8c843395",
 								"exec": [
 									"pm.test(\"Status code is 201\", function () {",
 									"    pm.response.to.have.status(201);",
@@ -775,7 +775,9 @@
 									"    pm.environment.set(\"guest_member_id\", guest.id);",
 									"}"
 								],
-								"id": "8df69095-103d-4b54-9d41-ddeb8c843395"
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
 							}
 						}
 					],
@@ -785,7 +787,14 @@
 					},
 					"request": {
 						"auth": {
-							"type": "inherit"
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
 						},
 						"method": "POST",
 						"header": [
@@ -816,7 +825,77 @@
 						},
 						"description": "Menambahkan guest member (tidak perlu user account, hanya nama dan kontak)."
 					},
-					"response": []
+					"response": [
+						{
+							"id": "50455262-ceaa9f1a-ec12-46cf-9b93-e400bd36356e",
+							"name": "Add Member (Guest)",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"type\": \"guest\",\n  \"guest_name\": \"Paman Bob\",\n  \"guest_contact\": \"08123456789\",\n  \"role\": \"member\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/trips/{{trip_id}}/members",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"trips",
+										"{{trip_id}}",
+										"members"
+									]
+								}
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": null,
+							"header": [
+								{
+									"key": "Host",
+									"value": "127.0.0.1:8000"
+								},
+								{
+									"key": "Connection",
+									"value": "close"
+								},
+								{
+									"key": "X-Powered-By",
+									"value": "PHP/8.2.12"
+								},
+								{
+									"key": "Cache-Control",
+									"value": "no-cache, private"
+								},
+								{
+									"key": "Date",
+									"value": "Sun, 30 Nov 2025 06:31:14 GMT"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Access-Control-Allow-Origin",
+									"value": "*"
+								}
+							],
+							"cookie": [],
+							"responseTime": null,
+							"body": "{\n    \"trip_id\": 1,\n    \"guest_name\": \"Paman Bob\",\n    \"guest_contact\": \"08123456789\",\n    \"role\": \"member\",\n    \"balance\": \"0.00\",\n    \"updated_at\": \"2025-11-30T06:31:14.000000Z\",\n    \"created_at\": \"2025-11-30T06:31:14.000000Z\",\n    \"id\": 3,\n    \"user\": null\n}"
+						}
+					]
 				}
 			],
 			"id": "50455262-e0316a5b-df98-4206-a4da-c5257ffa6a76"
@@ -892,7 +971,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"type": "text/javascript",
+								"id": "096aee8f-20b1-48cb-b037-5c0affbb2a29",
 								"exec": [
 									"pm.test(\"Status code is 201\", function () {",
 									"    pm.response.to.have.status(201);",
@@ -913,7 +992,9 @@
 									"    pm.environment.set(\"transaction_id\", tx.id);",
 									"}"
 								],
-								"id": "096aee8f-20b1-48cb-b037-5c0affbb2a29"
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
 							}
 						}
 					],
@@ -923,7 +1004,14 @@
 					},
 					"request": {
 						"auth": {
-							"type": "inherit"
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
 						},
 						"method": "POST",
 						"header": [

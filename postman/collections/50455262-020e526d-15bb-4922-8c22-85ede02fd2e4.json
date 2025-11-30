@@ -1042,7 +1042,77 @@
 						},
 						"description": "Membuat transaksi baru dengan split equal. Pastikan member_id, member_id_user, dan guest_member_id sudah di-set di environment."
 					},
-					"response": []
+					"response": [
+						{
+							"id": "50455262-68d90ca7-3e8d-46e8-9b63-bc9002b776c6",
+							"name": "Create Transaction (Equal Split)",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"title\": \"Makan Malam\",\n  \"description\": \"Warung seafood\",\n  \"date\": \"2025-12-01 19:00:00\",\n  \"total_amount\": 150000,\n  \"paid_by_member_id\": {{member_id}},\n  \"split_type\": \"equal\",\n  \"splits\": [\n    { \"member_id\": {{member_id}}, \"amount\": 50000 },\n    { \"member_id\": {{member_id_user}}, \"amount\": 50000 },\n    { \"member_id\": {{guest_member_id}}, \"amount\": 50000 }\n  ]\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/trips/{{trip_id}}/transactions",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"trips",
+										"{{trip_id}}",
+										"transactions"
+									]
+								}
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": null,
+							"header": [
+								{
+									"key": "Host",
+									"value": "127.0.0.1:8000"
+								},
+								{
+									"key": "Connection",
+									"value": "close"
+								},
+								{
+									"key": "X-Powered-By",
+									"value": "PHP/8.2.12"
+								},
+								{
+									"key": "Cache-Control",
+									"value": "no-cache, private"
+								},
+								{
+									"key": "Date",
+									"value": "Sun, 30 Nov 2025 06:31:48 GMT"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Access-Control-Allow-Origin",
+									"value": "*"
+								}
+							],
+							"cookie": [],
+							"responseTime": null,
+							"body": "{\n    \"trip_id\": 1,\n    \"created_by_member_id\": 1,\n    \"paid_by_member_id\": 1,\n    \"title\": \"Makan Malam\",\n    \"description\": \"Warung seafood\",\n    \"date\": \"2025-12-01T19:00:00.000000Z\",\n    \"total_amount\": \"150000.00\",\n    \"split_type\": \"equal\",\n    \"meta\": null,\n    \"updated_at\": \"2025-11-30T06:31:48.000000Z\",\n    \"created_at\": \"2025-11-30T06:31:48.000000Z\",\n    \"id\": 1,\n    \"paid_by\": {\n        \"id\": 1,\n        \"trip_id\": 1,\n        \"user_id\": 1,\n        \"guest_name\": null,\n        \"guest_contact\": null,\n        \"role\": \"admin\",\n        \"balance\": \"100000.00\",\n        \"created_at\": \"2025-11-30T05:52:04.000000Z\",\n        \"updated_at\": \"2025-11-30T06:31:48.000000Z\"\n    },\n    \"splits\": [\n        {\n            \"id\": 1,\n            \"transaction_id\": 1,\n            \"member_id\": 1,\n            \"amount\": \"50000.00\",\n            \"created_at\": \"2025-11-30T06:31:48.000000Z\",\n            \"updated_at\": \"2025-11-30T06:31:48.000000Z\",\n            \"member\": {\n                \"id\": 1,\n                \"trip_id\": 1,\n                \"user_id\": 1,\n                \"guest_name\": null,\n                \"guest_contact\": null,\n                \"role\": \"admin\",\n                \"balance\": \"100000.00\",\n                \"created_at\": \"2025-11-30T05:52:04.000000Z\",\n                \"updated_at\": \"2025-11-30T06:31:48.000000Z\"\n            }\n        },\n        {\n            \"id\": 2,\n            \"transaction_id\": 1,\n            \"member_id\": 2,\n            \"amount\": \"50000.00\",\n            \"created_at\": \"2025-11-30T06:31:48.000000Z\",\n            \"updated_at\": \"2025-11-30T06:31:48.000000Z\",\n            \"member\": {\n                \"id\": 2,\n                \"trip_id\": 1,\n                \"user_id\": 2,\n                \"guest_name\": null,\n                \"guest_contact\": null,\n                \"role\": \"member\",\n                \"balance\": \"-50000.00\",\n                \"created_at\": \"2025-11-30T06:30:32.000000Z\",\n                \"updated_at\": \"2025-11-30T06:31:48.000000Z\"\n            }\n        },\n        {\n            \"id\": 3,\n            \"transaction_id\": 1,\n            \"member_id\": 3,\n            \"amount\": \"50000.00\",\n            \"created_at\": \"2025-11-30T06:31:48.000000Z\",\n            \"updated_at\": \"2025-11-30T06:31:48.000000Z\",\n            \"member\": {\n                \"id\": 3,\n                \"trip_id\": 1,\n                \"user_id\": null,\n                \"guest_name\": \"Paman Bob\",\n                \"guest_contact\": \"08123456789\",\n                \"role\": \"member\",\n                \"balance\": \"-50000.00\",\n                \"created_at\": \"2025-11-30T06:31:14.000000Z\",\n                \"updated_at\": \"2025-11-30T06:31:48.000000Z\"\n            }\n        }\n    ]\n}"
+						}
+					]
 				}
 			],
 			"id": "50455262-126a9af6-57fb-4ee3-bf11-a22214770de1"

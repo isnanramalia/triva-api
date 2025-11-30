@@ -1,0 +1,970 @@
+{
+	"info": {
+		"_postman_id": "50455262-020e526d-15bb-4922-8c22-85ede02fd2e4",
+		"name": "Triva API",
+		"description": "Postman collection untuk Triva App (Laravel backend + Sanctum). Gunakan environment variables: base_url, token, trip_id, member_id, member_id_user, guest_member_id, transaction_id, settle_from_member_id, settle_to_member_id, settle_amount.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "0. Auth",
+			"item": [
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"let jsonData;",
+									"try {",
+									"    jsonData = pm.response.json();",
+									"} catch (e) {",
+									"    jsonData = {};",
+									"}",
+									"",
+									"pm.test(\"Response has token\", function () {",
+									"    pm.expect(jsonData).to.have.property(\"token\");",
+									"});",
+									"",
+									"if (jsonData.token) {",
+									"    pm.environment.set(\"token\", jsonData.token);",
+									"}",
+									"",
+									"if (jsonData.user && jsonData.user.id) {",
+									"    pm.environment.set(\"user_id\", jsonData.user.id);",
+									"}"
+								],
+								"id": "17417a8c-0ddb-46eb-8d6e-0590c03d64cb"
+							}
+						}
+					],
+					"id": "50455262-a5ace071-7cc3-4a91-b6c2-c6ba1af09bf4",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"login"
+							]
+						},
+						"description": "Login user dan mendapatkan Sanctum token.\n\nEnvironment yang digunakan:\n- base_url\n\nScript test akan menyimpan token ke environment `token`."
+					},
+					"response": []
+				},
+				{
+					"name": "Me (Get Current User)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"let jsonData;",
+									"try {",
+									"    jsonData = pm.response.json();",
+									"} catch (e) {",
+									"    jsonData = {};",
+									"}",
+									"",
+									"pm.test(\"User object has id and email\", function () {",
+									"    pm.expect(jsonData).to.have.property(\"id\");",
+									"    pm.expect(jsonData).to.have.property(\"email\");",
+									"});"
+								],
+								"id": "9b67dc93-3c11-4085-9a84-bd9acab2eee7"
+							}
+						}
+					],
+					"id": "50455262-7f74365f-ff35-478b-b9e5-bd3770ade4e7",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "inherit"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/me",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"me"
+							]
+						},
+						"description": "Mengambil data user yang sedang login berdasarkan Bearer token di header Authorization."
+					},
+					"response": []
+				},
+				{
+					"name": "Logout",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.environment.unset(\"token\");"
+								],
+								"id": "f7340b46-51fb-4e7e-bc20-874c53912d00"
+							}
+						}
+					],
+					"id": "50455262-1eb9e70a-12f5-45d1-a2bf-48015396fc60",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "inherit"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/logout",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"logout"
+							]
+						},
+						"description": "Logout dari token yang sedang aktif (token dihapus dari personal_access_tokens)."
+					},
+					"response": []
+				}
+			],
+			"id": "50455262-a34c2c1d-f0f3-45c2-9c52-badda64d0e31"
+		},
+		{
+			"name": "1. Trips",
+			"item": [
+				{
+					"name": "List Trips",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"let data;",
+									"try {",
+									"    data = pm.response.json();",
+									"} catch (e) {",
+									"    data = [];",
+									"}",
+									"",
+									"pm.test(\"Response is array\", function () {",
+									"    pm.expect(data).to.be.an(\"array\");",
+									"});",
+									"",
+									"if (Array.isArray(data) && data.length > 0 && data[0].id) {",
+									"    pm.environment.set(\"trip_id\", data[0].id);",
+									"}"
+								],
+								"id": "36a8ab5a-ea54-4e44-a27f-0f3c459c74e7"
+							}
+						}
+					],
+					"id": "50455262-44d7b67d-2ccd-41f8-bd20-fc02a457687f",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "inherit"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/trips",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"trips"
+							]
+						},
+						"description": "Menampilkan semua trip yang diikuti user saat ini (via trip_members)."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Trip",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"let trip;",
+									"try {",
+									"    trip = pm.response.json();",
+									"} catch (e) {",
+									"    trip = {};",
+									"}",
+									"",
+									"pm.test(\"Trip has id and name\", function () {",
+									"    pm.expect(trip).to.have.property(\"id\");",
+									"    pm.expect(trip).to.have.property(\"name\");",
+									"});",
+									"",
+									"if (trip.id) {",
+									"    pm.environment.set(\"trip_id\", trip.id);",
+									"}"
+								],
+								"id": "5b12190b-7aea-4b7f-96d7-42ad109d4ded"
+							}
+						}
+					],
+					"id": "50455262-c26509e9-cfaa-4405-9e60-5f5d837cfefc",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "inherit"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Bali Trip 2025\",\n  \"description\": \"Liburan bareng geng kampus\",\n  \"currency_code\": \"IDR\",\n  \"start_date\": \"2025-12-01\",\n  \"end_date\": \"2025-12-05\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/trips",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"trips"
+							]
+						},
+						"description": "Membuat trip baru. Otomatis menambahkan creator sebagai trip_member dengan role admin."
+					},
+					"response": []
+				},
+				{
+					"name": "Trip Detail",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"let trip;",
+									"try {",
+									"    trip = pm.response.json();",
+									"} catch (e) {",
+									"    trip = {};",
+									"}",
+									"",
+									"pm.test(\"Trip id matches environment trip_id\", function () {",
+									"    const envId = parseInt(pm.environment.get(\"trip_id\"));",
+									"    if (!isNaN(envId)) {",
+									"        pm.expect(trip.id).to.eql(envId);",
+									"    }",
+									"});"
+								],
+								"id": "c4bac7ee-5c78-4ad5-8b47-120f84ac1877"
+							}
+						}
+					],
+					"id": "50455262-d2a23ba2-bc04-49e2-ac13-99a6ff6d01a5",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "inherit"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/trips/{{trip_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"trips",
+								"{{trip_id}}"
+							]
+						},
+						"description": "Detail satu trip. Pastikan user adalah member trip tersebut."
+					},
+					"response": []
+				}
+			],
+			"id": "50455262-69184040-56c3-4029-8004-f9d4cce784c7",
+			"auth": {
+				"type": "bearer",
+				"bearer": [
+					{
+						"key": "token",
+						"value": "{{token}}",
+						"type": "string"
+					}
+				]
+			},
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "b354b233-f922-432e-bd4c-d4f95823ff57",
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {},
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "3a4bf427-dd95-41f8-a9e8-668a8395633d",
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {},
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "2. Trip Members",
+			"item": [
+				{
+					"name": "List Members",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"let members;",
+									"try {",
+									"    members = pm.response.json();",
+									"} catch (e) {",
+									"    members = [];",
+									"}",
+									"",
+									"pm.test(\"Members is array\", function () {",
+									"    pm.expect(members).to.be.an(\"array\");",
+									"});",
+									"",
+									"if (Array.isArray(members) && members.length > 0 && members[0].id) {",
+									"    pm.environment.set(\"member_id\", members[0].id);",
+									"}"
+								],
+								"id": "4e8e605f-aa7c-4507-b67b-8ab35d099005"
+							}
+						}
+					],
+					"id": "50455262-b4cbd5d6-8dcd-4d2d-a22a-98c80b22a8d0",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "inherit"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/trips/{{trip_id}}/members",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"trips",
+								"{{trip_id}}",
+								"members"
+							]
+						},
+						"description": "Menampilkan daftar member (user + guest) untuk satu trip."
+					},
+					"response": []
+				},
+				{
+					"name": "Add Member (User by Email)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 200 or 201\", function () {",
+									"    pm.expect([200,201]).to.include(pm.response.code);",
+									"});",
+									"",
+									"let member;",
+									"try {",
+									"    member = pm.response.json();",
+									"} catch (e) {",
+									"    member = {};",
+									"}",
+									"",
+									"if (member.id) {",
+									"    pm.environment.set(\"member_id_user\", member.id);",
+									"}"
+								],
+								"id": "7baf47fb-7d40-4838-ae6d-b22f7880061e"
+							}
+						}
+					],
+					"id": "50455262-a1814918-fcb0-49fb-975c-764319221ab5",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "inherit"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"type\": \"user\",\n  \"email\": \"temanmu@example.com\",\n  \"role\": \"member\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/trips/{{trip_id}}/members",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"trips",
+								"{{trip_id}}",
+								"members"
+							]
+						},
+						"description": "Menambahkan member berdasarkan email user yang sudah terdaftar di sistem."
+					},
+					"response": []
+				},
+				{
+					"name": "Add Member (Guest)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"let guest;",
+									"try {",
+									"    guest = pm.response.json();",
+									"} catch (e) {",
+									"    guest = {};",
+									"}",
+									"",
+									"if (guest.id) {",
+									"    pm.environment.set(\"guest_member_id\", guest.id);",
+									"}"
+								],
+								"id": "8df69095-103d-4b54-9d41-ddeb8c843395"
+							}
+						}
+					],
+					"id": "50455262-96410986-6049-4a98-9b91-87383b428d69",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "inherit"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"type\": \"guest\",\n  \"guest_name\": \"Paman Bob\",\n  \"guest_contact\": \"08123456789\",\n  \"role\": \"member\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/trips/{{trip_id}}/members",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"trips",
+								"{{trip_id}}",
+								"members"
+							]
+						},
+						"description": "Menambahkan guest member (tidak perlu user account, hanya nama dan kontak)."
+					},
+					"response": []
+				}
+			],
+			"id": "50455262-e0316a5b-df98-4206-a4da-c5257ffa6a76"
+		},
+		{
+			"name": "3. Transactions",
+			"item": [
+				{
+					"name": "List Transactions",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"let txs;",
+									"try {",
+									"    txs = pm.response.json();",
+									"} catch (e) {",
+									"    txs = [];",
+									"}",
+									"",
+									"pm.test(\"Transactions is array\", function () {",
+									"    pm.expect(txs).to.be.an(\"array\");",
+									"});",
+									"",
+									"if (Array.isArray(txs) && txs.length > 0 && txs[0].id) {",
+									"    pm.environment.set(\"transaction_id\", txs[0].id);",
+									"}"
+								],
+								"id": "05be51af-feb7-4fd7-8afe-8c206346c0b9"
+							}
+						}
+					],
+					"id": "50455262-71b71b66-bf4e-40ed-a29f-8b3a17ac7435",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "inherit"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/trips/{{trip_id}}/transactions",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"trips",
+								"{{trip_id}}",
+								"transactions"
+							]
+						},
+						"description": "Menampilkan semua transaksi dalam satu trip."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Transaction (Equal Split)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"let tx;",
+									"try {",
+									"    tx = pm.response.json();",
+									"} catch (e) {",
+									"    tx = {};",
+									"}",
+									"",
+									"pm.test(\"Transaction has id\", function () {",
+									"    pm.expect(tx).to.have.property(\"id\");",
+									"});",
+									"",
+									"if (tx.id) {",
+									"    pm.environment.set(\"transaction_id\", tx.id);",
+									"}"
+								],
+								"id": "096aee8f-20b1-48cb-b037-5c0affbb2a29"
+							}
+						}
+					],
+					"id": "50455262-156e2b4c-4f26-42ad-808e-2c71f9ee1f0e",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "inherit"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Makan Malam\",\n  \"description\": \"Warung seafood\",\n  \"date\": \"2025-12-01 19:00:00\",\n  \"total_amount\": 150000,\n  \"paid_by_member_id\": {{member_id}},\n  \"split_type\": \"equal\",\n  \"splits\": [\n    { \"member_id\": {{member_id}}, \"amount\": 50000 },\n    { \"member_id\": {{member_id_user}}, \"amount\": 50000 },\n    { \"member_id\": {{guest_member_id}}, \"amount\": 50000 }\n  ]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/trips/{{trip_id}}/transactions",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"trips",
+								"{{trip_id}}",
+								"transactions"
+							]
+						},
+						"description": "Membuat transaksi baru dengan split equal. Pastikan member_id, member_id_user, dan guest_member_id sudah di-set di environment."
+					},
+					"response": []
+				}
+			],
+			"id": "50455262-126a9af6-57fb-4ee3-bf11-a22214770de1"
+		},
+		{
+			"name": "4. Settlements",
+			"item": [
+				{
+					"name": "Settlement Suggestions (N-Way)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"let suggestions;",
+									"try {",
+									"    suggestions = pm.response.json();",
+									"} catch (e) {",
+									"    suggestions = [];",
+									"}",
+									"",
+									"pm.test(\"Suggestions is array\", function () {",
+									"    pm.expect(suggestions).to.be.an(\"array\");",
+									"});",
+									"",
+									"if (Array.isArray(suggestions) && suggestions.length > 0) {",
+									"    const first = suggestions[0];",
+									"    if (first.from_member_id) {",
+									"        pm.environment.set(\"settle_from_member_id\", first.from_member_id);",
+									"    }",
+									"    if (first.to_member_id) {",
+									"        pm.environment.set(\"settle_to_member_id\", first.to_member_id);",
+									"    }",
+									"    if (first.amount) {",
+									"        pm.environment.set(\"settle_amount\", first.amount);",
+									"    }",
+									"}"
+								],
+								"id": "a11b967c-f6ad-429b-9ec5-4b8478e0f66a"
+							}
+						}
+					],
+					"id": "50455262-f4e0e3ab-9a5e-41ea-84cf-d562af9a98d6",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "inherit"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/trips/{{trip_id}}/settlements/suggestions",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"trips",
+								"{{trip_id}}",
+								"settlements",
+								"suggestions"
+							]
+						},
+						"description": "Mengambil rekomendasi settlement berdasarkan balance saat ini (n-way simplification)."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Settlement",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"let st;",
+									"try {",
+									"    st = pm.response.json();",
+									"} catch (e) {",
+									"    st = {};",
+									"}",
+									"",
+									"pm.test(\"Settlement has id and status confirmed\", function () {",
+									"    pm.expect(st).to.have.property(\"id\");",
+									"    pm.expect(st.status).to.eql(\"confirmed\");",
+									"});"
+								],
+								"id": "062833e8-3e1c-4b37-b003-5a99a3a29378"
+							}
+						}
+					],
+					"id": "50455262-b16b1b4d-f9c4-4a3a-a710-2a72a184bf0a",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "inherit"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"from_member_id\": {{settle_from_member_id}},\n  \"to_member_id\": {{settle_to_member_id}},\n  \"amount\": {{settle_amount}}\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/trips/{{trip_id}}/settlements",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"trips",
+								"{{trip_id}}",
+								"settlements"
+							]
+						},
+						"description": "Mencatat settlement yang telah dilakukan (MVP: langsung status confirmed). Menggunakan nilai dari suggestions."
+					},
+					"response": []
+				}
+			],
+			"id": "50455262-2c429681-c844-4d51-9877-592c10ab86b8"
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{token}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "864c8c87-4efe-48f8-a3c0-74391bfe29f7",
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					"// Tambahkan Accept: application/json\r",
+					"pm.request.headers.add({\r",
+					"    key: 'Accept',\r",
+					"    value: 'application/json'\r",
+					"});\r",
+					"\r",
+					"// Tambahkan Content-Type: application/json\r",
+					"// Catatan: Postman biasanya menangani ini secara otomatis jika Anda memilih 'Body' type JSON,\r",
+					"// tapi menambahkannya di sini memastikan konsistensi.\r",
+					"pm.request.headers.add({\r",
+					"    key: 'Content-Type',\r",
+					"    value: 'application/json'\r",
+					"});\r",
+					"\r",
+					"// Tambahkan Authorization: Bearer {{token}} jika token tersedia di environment\r",
+					"// var token = pm.environment.get(\"token\");\r",
+					"// if (token) {\r",
+					"//     pm.request.headers.add({\r",
+					"//         key: 'Authorization',\r",
+					"//         value: 'Bearer ' + token\r",
+					"//     });\r",
+					"// }\r",
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"id": "24769207-6708-4dda-9b75-7b52e69dd096",
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "token",
+			"value": ""
+		}
+	]
+}

@@ -531,8 +531,20 @@
 					"response": []
 				},
 				{
-					"name": "New Request",
+					"name": "List Settlement",
 					"id": "50455262-ba077673-d242-4ec1-91f2-ab56f76dcade",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "New Request",
+					"id": "50455262-4cf96d38-f7a7-4984-ae44-a318ae5ac83a",
 					"protocolProfileBehavior": {
 						"disableBodyPruning": true
 					},

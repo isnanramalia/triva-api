@@ -38,7 +38,71 @@
 							]
 						}
 					},
-					"response": []
+					"response": [
+						{
+							"id": "50455262-36b00410-93b5-4bfe-8c6b-a47a9a5927a7",
+							"name": "New Request",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"name\": \"Isna\",\r\n  \"email\": \"isna@example.com\",\r\n  \"password\": \"password\"\r\n}\r\n",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/api/register",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"register"
+									]
+								}
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": null,
+							"header": [
+								{
+									"key": "Host",
+									"value": "127.0.0.1:8000"
+								},
+								{
+									"key": "Connection",
+									"value": "close"
+								},
+								{
+									"key": "X-Powered-By",
+									"value": "PHP/8.2.12"
+								},
+								{
+									"key": "Cache-Control",
+									"value": "no-cache, private"
+								},
+								{
+									"key": "Date",
+									"value": "Sun, 30 Nov 2025 07:08:32 GMT"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Access-Control-Allow-Origin",
+									"value": "*"
+								}
+							],
+							"cookie": [],
+							"responseTime": null,
+							"body": "{\n    \"status\": \"success\",\n    \"message\": \"User registered successfully.\",\n    \"user\": {\n        \"name\": \"Isna\",\n        \"email\": \"isna@example.com\",\n        \"updated_at\": \"2025-11-30T07:08:32.000000Z\",\n        \"created_at\": \"2025-11-30T07:08:32.000000Z\",\n        \"id\": 4\n    },\n    \"token\": \"1|dxqRqH9Obr8Qr6BfrSwFNfwm5iWkR2eVBdaAIdWc7cca580d\"\n}"
+						}
+					]
 				},
 				{
 					"name": "Login",

@@ -573,7 +573,7 @@
 					"response": []
 				},
 				{
-					"name": "New Request",
+					"name": "Public Summary (guest link)",
 					"id": "50455262-f46bf2ea-cfcf-4a31-8f56-6b5bec54788e",
 					"protocolProfileBehavior": {
 						"disableBodyPruning": true

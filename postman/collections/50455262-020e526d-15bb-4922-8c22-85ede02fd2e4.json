@@ -741,7 +741,7 @@
 					]
 				},
 				{
-					"name": "New Request",
+					"name": "Delete Trip",
 					"id": "50455262-837aed0e-adbb-4dac-a147-e8e8734216fb",
 					"protocolProfileBehavior": {
 						"disableBodyPruning": true
@@ -760,6 +760,18 @@
 								"{{trip_id}}"
 							]
 						}
+					},
+					"response": []
+				},
+				{
+					"name": "New Request",
+					"id": "50455262-e9e604ef-f2d2-489d-9e5d-4d12c3a0b849",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": []
 					},
 					"response": []
 				}

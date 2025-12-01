@@ -764,14 +764,26 @@
 					"response": []
 				},
 				{
-					"name": "New Request",
+					"name": "Public Summary (Guest link, tanpa token)",
 					"id": "50455262-e9e604ef-f2d2-489d-9e5d-4d12c3a0b849",
 					"protocolProfileBehavior": {
 						"disableBodyPruning": true
 					},
 					"request": {
 						"method": "GET",
-						"header": []
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/public/trips/{{public_summary_token}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"public",
+								"trips",
+								"{{public_summary_token}}"
+							]
+						}
 					},
 					"response": []
 				}
@@ -1270,6 +1282,18 @@
 							"body": "{\n    \"trip_id\": 1,\n    \"guest_name\": \"Paman Bob\",\n    \"guest_contact\": \"08123456789\",\n    \"role\": \"member\",\n    \"balance\": \"0.00\",\n    \"updated_at\": \"2025-11-30T06:31:14.000000Z\",\n    \"created_at\": \"2025-11-30T06:31:14.000000Z\",\n    \"id\": 3,\n    \"user\": null\n}"
 						}
 					]
+				},
+				{
+					"name": "Update Member",
+					"id": "50455262-59fa151d-6604-455d-9f56-c01520c7e627",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
 				}
 			],
 			"id": "50455262-e0316a5b-df98-4206-a4da-c5257ffa6a76"

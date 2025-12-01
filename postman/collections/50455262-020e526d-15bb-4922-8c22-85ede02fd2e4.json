@@ -258,162 +258,6 @@
 			"name": "1. Trips",
 			"item": [
 				{
-					"name": "List Trips",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"id": "36a8ab5a-ea54-4e44-a27f-0f3c459c74e7",
-								"exec": [
-									"pm.test(\"Status code is 200\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"",
-									"let data;",
-									"try {",
-									"    data = pm.response.json();",
-									"} catch (e) {",
-									"    data = [];",
-									"}",
-									"",
-									"pm.test(\"Status is success\", function() {",
-									"    pm.expect(json.status).to.eql(\"success\");",
-									"});",
-									"",
-									"// data = paginator object",
-									"pm.test(\"Data has pagination structure\", function() {",
-									"    pm.expect(json.data).to.have.property(\"data\");",
-									"    pm.expect(json.data).to.have.property(\"current_page\");",
-									"});",
-									"",
-									"// trips array",
-									"const trips = (json.data && Array.isArray(json.data.data)) ? json.data.data : [];",
-									"",
-									"pm.test(\"Trips is array\", function () {",
-									"    pm.expect(trips).to.be.an(\"array\");",
-									"});",
-									"",
-									"if (trips.length > 0 && trips[0].id) {",
-									"    pm.environment.set(\"trip_id\", trips[0].id);",
-									"}"
-								],
-								"type": "text/javascript",
-								"packages": {},
-								"requests": {}
-							}
-						}
-					],
-					"id": "50455262-44d7b67d-2ccd-41f8-bd20-fc02a457687f",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [
-							{
-								"key": "Accept",
-								"value": "application/json"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/api/trips",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"trips"
-							],
-							"query": [
-								{
-									"key": "per_page",
-									"value": "5",
-									"type": "text",
-									"disabled": true
-								},
-								{
-									"key": "page",
-									"value": "1",
-									"type": "text",
-									"disabled": true
-								}
-							]
-						},
-						"description": "Menampilkan semua trip yang diikuti user saat ini (via trip_members)."
-					},
-					"response": [
-						{
-							"id": "50455262-af78e21f-11ab-485e-8b3b-eac1145e44c6",
-							"name": "List Trips",
-							"originalRequest": {
-								"method": "GET",
-								"header": [
-									{
-										"key": "Accept",
-										"value": "application/json"
-									}
-								],
-								"url": {
-									"raw": "{{base_url}}/api/trips",
-									"host": [
-										"{{base_url}}"
-									],
-									"path": [
-										"api",
-										"trips"
-									]
-								}
-							},
-							"status": "OK",
-							"code": 200,
-							"_postman_previewlanguage": null,
-							"header": [
-								{
-									"key": "Host",
-									"value": "127.0.0.1:8000"
-								},
-								{
-									"key": "Connection",
-									"value": "close"
-								},
-								{
-									"key": "X-Powered-By",
-									"value": "PHP/8.2.12"
-								},
-								{
-									"key": "Cache-Control",
-									"value": "no-cache, private"
-								},
-								{
-									"key": "Date",
-									"value": "Sun, 30 Nov 2025 06:32:54 GMT"
-								},
-								{
-									"key": "Content-Type",
-									"value": "application/json"
-								},
-								{
-									"key": "Access-Control-Allow-Origin",
-									"value": "*"
-								}
-							],
-							"cookie": [],
-							"responseTime": null,
-							"body": "[\n    {\n        \"id\": 1,\n        \"owner_id\": 1,\n        \"name\": \"Bali Trip 2025\",\n        \"description\": \"Liburan bareng geng kampus\",\n        \"currency_code\": \"IDR\",\n        \"start_date\": \"2025-12-01T00:00:00.000000Z\",\n        \"end_date\": \"2025-12-05T00:00:00.000000Z\",\n        \"public_summary_token\": null,\n        \"status\": \"planning\",\n        \"created_at\": \"2025-11-30T05:52:04.000000Z\",\n        \"updated_at\": \"2025-11-30T05:52:04.000000Z\",\n        \"members_count\": 3\n    }\n]"
-						}
-					]
-				},
-				{
 					"name": "Create Trip",
 					"event": [
 						{
@@ -1601,6 +1445,162 @@
 				}
 			],
 			"id": "50455262-2c429681-c844-4d51-9877-592c10ab86b8"
+		},
+		{
+			"name": "List Trips",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "36a8ab5a-ea54-4e44-a27f-0f3c459c74e7",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"let data;",
+							"try {",
+							"    data = pm.response.json();",
+							"} catch (e) {",
+							"    data = [];",
+							"}",
+							"",
+							"pm.test(\"Status is success\", function() {",
+							"    pm.expect(json.status).to.eql(\"success\");",
+							"});",
+							"",
+							"// data = paginator object",
+							"pm.test(\"Data has pagination structure\", function() {",
+							"    pm.expect(json.data).to.have.property(\"data\");",
+							"    pm.expect(json.data).to.have.property(\"current_page\");",
+							"});",
+							"",
+							"// trips array",
+							"const trips = (json.data && Array.isArray(json.data.data)) ? json.data.data : [];",
+							"",
+							"pm.test(\"Trips is array\", function () {",
+							"    pm.expect(trips).to.be.an(\"array\");",
+							"});",
+							"",
+							"if (trips.length > 0 && trips[0].id) {",
+							"    pm.environment.set(\"trip_id\", trips[0].id);",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"id": "50455262-44d7b67d-2ccd-41f8-bd20-fc02a457687f",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/trips",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"trips"
+					],
+					"query": [
+						{
+							"key": "per_page",
+							"value": "5",
+							"type": "text",
+							"disabled": true
+						},
+						{
+							"key": "page",
+							"value": "1",
+							"type": "text",
+							"disabled": true
+						}
+					]
+				},
+				"description": "Menampilkan semua trip yang diikuti user saat ini (via trip_members)."
+			},
+			"response": [
+				{
+					"id": "50455262-af78e21f-11ab-485e-8b3b-eac1145e44c6",
+					"name": "List Trips",
+					"originalRequest": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/trips",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"trips"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": null,
+					"header": [
+						{
+							"key": "Host",
+							"value": "127.0.0.1:8000"
+						},
+						{
+							"key": "Connection",
+							"value": "close"
+						},
+						{
+							"key": "X-Powered-By",
+							"value": "PHP/8.2.12"
+						},
+						{
+							"key": "Cache-Control",
+							"value": "no-cache, private"
+						},
+						{
+							"key": "Date",
+							"value": "Sun, 30 Nov 2025 06:32:54 GMT"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "*"
+						}
+					],
+					"cookie": [],
+					"responseTime": null,
+					"body": "[\n    {\n        \"id\": 1,\n        \"owner_id\": 1,\n        \"name\": \"Bali Trip 2025\",\n        \"description\": \"Liburan bareng geng kampus\",\n        \"currency_code\": \"IDR\",\n        \"start_date\": \"2025-12-01T00:00:00.000000Z\",\n        \"end_date\": \"2025-12-05T00:00:00.000000Z\",\n        \"public_summary_token\": null,\n        \"status\": \"planning\",\n        \"created_at\": \"2025-11-30T05:52:04.000000Z\",\n        \"updated_at\": \"2025-11-30T05:52:04.000000Z\",\n        \"members_count\": 3\n    }\n]"
+				}
+			]
 		}
 	],
 	"auth": {

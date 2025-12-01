@@ -662,13 +662,14 @@
 							}
 						},
 						"url": {
-							"raw": "{{base_url}}/api/trips{{trip_id}}",
+							"raw": "{{base_url}}/api/trips/{{trip_id}}",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"api",
-								"trips{{trip_id}}"
+								"trips",
+								"{{trip_id}}"
 							]
 						}
 					},

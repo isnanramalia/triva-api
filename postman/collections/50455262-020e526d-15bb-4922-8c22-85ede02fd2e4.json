@@ -650,8 +650,27 @@
 						"disableBodyPruning": true
 					},
 					"request": {
-						"method": "GET",
-						"header": []
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Bali Trip 2025 (rev)\",\r\n  \"description\": \"Update deskripsi\",\r\n  \"currency_code\": \"IDR\",\r\n  \"start_date\": \"2025-12-02\",\r\n  \"end_date\": \"2025-12-06\",\r\n  \"status\": \"ongoing\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/trips{{trip_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"trips{{trip_id}}"
+							]
+						}
 					},
 					"response": []
 				}

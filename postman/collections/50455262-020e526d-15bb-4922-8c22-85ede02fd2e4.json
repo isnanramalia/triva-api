@@ -644,7 +644,7 @@
 					]
 				},
 				{
-					"name": "Update",
+					"name": "Update Trip",
 					"id": "50455262-76ce5a0b-d733-4eb6-8b10-09e5ae3f60c9",
 					"protocolProfileBehavior": {
 						"disableBodyPruning": true
@@ -672,6 +672,83 @@
 								"{{trip_id}}"
 							]
 						}
+					},
+					"response": [
+						{
+							"id": "50455262-3246fd65-6387-48cb-9be7-f56a03cddcde",
+							"name": "New Request",
+							"originalRequest": {
+								"method": "PATCH",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"name\": \"Bali Trip 2025 (rev)\",\r\n  \"description\": \"Update deskripsi\",\r\n  \"currency_code\": \"IDR\",\r\n  \"start_date\": \"2025-12-02\",\r\n  \"end_date\": \"2025-12-06\",\r\n  \"status\": \"ongoing\"\r\n}\r\n",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/api/trips/{{trip_id}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"trips",
+										"{{trip_id}}"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": null,
+							"header": [
+								{
+									"key": "Host",
+									"value": "127.0.0.1:8000"
+								},
+								{
+									"key": "Connection",
+									"value": "close"
+								},
+								{
+									"key": "X-Powered-By",
+									"value": "PHP/8.2.12"
+								},
+								{
+									"key": "Cache-Control",
+									"value": "no-cache, private"
+								},
+								{
+									"key": "Date",
+									"value": "Mon, 01 Dec 2025 10:16:17 GMT"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Access-Control-Allow-Origin",
+									"value": "*"
+								}
+							],
+							"cookie": [],
+							"responseTime": null,
+							"body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"id\": 4,\n        \"owner_id\": 4,\n        \"name\": \"Bali Trip 2025 (rev)\",\n        \"description\": \"Update deskripsi\",\n        \"currency_code\": \"IDR\",\n        \"start_date\": \"2025-12-02T00:00:00.000000Z\",\n        \"end_date\": \"2025-12-06T00:00:00.000000Z\",\n        \"public_summary_token\": \"rIdr0Hn9mvbXnKdNZSN45avBYClxHHAl\",\n        \"status\": \"ongoing\",\n        \"created_at\": \"2025-12-01T10:00:35.000000Z\",\n        \"updated_at\": \"2025-12-01T10:16:17.000000Z\"\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "New Request",
+					"id": "50455262-837aed0e-adbb-4dac-a147-e8e8734216fb",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": []
 					},
 					"response": []
 				}

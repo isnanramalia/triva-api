@@ -1318,7 +1318,7 @@
 					"response": []
 				},
 				{
-					"name": "New Request",
+					"name": "Delete Member",
 					"id": "50455262-4fe9320a-2527-48ae-9001-dfc965625307",
 					"protocolProfileBehavior": {
 						"disableBodyPruning": true

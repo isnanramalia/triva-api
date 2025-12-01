@@ -276,12 +276,25 @@
 									"    data = [];",
 									"}",
 									"",
-									"pm.test(\"Response is array\", function () {",
-									"    pm.expect(data).to.be.an(\"array\");",
+									"pm.test(\"Status is success\", function() {",
+									"    pm.expect(json.status).to.eql(\"success\");",
 									"});",
 									"",
-									"if (Array.isArray(data) && data.length > 0 && data[0].id) {",
-									"    pm.environment.set(\"trip_id\", data[0].id);",
+									"// data = paginator object",
+									"pm.test(\"Data has pagination structure\", function() {",
+									"    pm.expect(json.data).to.have.property(\"data\");",
+									"    pm.expect(json.data).to.have.property(\"current_page\");",
+									"});",
+									"",
+									"// trips array",
+									"const trips = (json.data && Array.isArray(json.data.data)) ? json.data.data : [];",
+									"",
+									"pm.test(\"Trips is array\", function () {",
+									"    pm.expect(trips).to.be.an(\"array\");",
+									"});",
+									"",
+									"if (trips.length > 0 && trips[0].id) {",
+									"    pm.environment.set(\"trip_id\", trips[0].id);",
 									"}"
 								],
 								"type": "text/javascript",
@@ -320,6 +333,20 @@
 							"path": [
 								"api",
 								"trips"
+							],
+							"query": [
+								{
+									"key": "per_page",
+									"value": "5",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "page",
+									"value": "1",
+									"type": "text",
+									"disabled": true
+								}
 							]
 						},
 						"description": "Menampilkan semua trip yang diikuti user saat ini (via trip_members)."

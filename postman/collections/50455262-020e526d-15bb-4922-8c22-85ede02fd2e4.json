@@ -20,7 +20,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"name\": \"Isna\",\r\n  \"email\": \"isna@example.com\",\r\n  \"password\": \"password\"\r\n}\r\n",
+							"raw": "{\r\n  \"name\": \"Isna\",\r\n  \"email\": \"isna@gmail.com\",\r\n  \"password\": \"password\"\r\n}\r\n",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -674,20 +674,25 @@
 									"    pm.response.to.have.status(200);",
 									"});",
 									"",
-									"let members;",
+									"let json;",
 									"try {",
-									"    members = pm.response.json();",
+									"    json = pm.response.json();",
 									"} catch (e) {",
-									"    members = [];",
+									"    json = {};",
 									"}",
 									"",
-									"pm.test(\"Members is array\", function () {",
-									"    pm.expect(members).to.be.an(\"array\");",
+									"pm.test(\"Status is success\", function () {",
+									"    pm.expect(json.status).to.eql(\"success\");",
 									"});",
 									"",
-									"if (Array.isArray(members) && members.length > 0 && members[0].id) {",
-									"    pm.environment.set(\"member_id\", members[0].id);",
-									"}"
+									"pm.test(\"Members is array\", function () {",
+									"    pm.expect(json.data).to.be.an(\"array\");",
+									"});",
+									"",
+									"if (Array.isArray(json.data) && json.data.length > 0 && json.data[0].id) {",
+									"    pm.environment.set(\"member_id\", json.data[0].id);",
+									"}",
+									""
 								],
 								"type": "text/javascript",
 								"packages": {},

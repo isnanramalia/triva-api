@@ -1638,7 +1638,7 @@
 					"response": []
 				},
 				{
-					"name": "New Request",
+					"name": "Delete Transaction",
 					"id": "50455262-8ee8d7cd-5826-4341-9d11-5747f666b3de",
 					"protocolProfileBehavior": {
 						"disableBodyPruning": true

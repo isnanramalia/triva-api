@@ -1102,28 +1102,41 @@
 						{
 							"listen": "test",
 							"script": {
-								"type": "text/javascript",
+								"id": "05be51af-feb7-4fd7-8afe-8c206346c0b9",
 								"exec": [
 									"pm.test(\"Status code is 200\", function () {",
 									"    pm.response.to.have.status(200);",
 									"});",
 									"",
-									"let txs;",
+									"let json;",
 									"try {",
-									"    txs = pm.response.json();",
+									"    json = pm.response.json();",
 									"} catch (e) {",
-									"    txs = [];",
+									"    json = {};",
 									"}",
+									"",
+									"pm.test(\"Status is success\", function () {",
+									"    pm.expect(json.status).to.eql(\"success\");",
+									"});",
+									"",
+									"pm.test(\"Transactions has pagination structure\", function () {",
+									"    pm.expect(json.data).to.have.property(\"data\");",
+									"});",
+									"",
+									"const txs = (json.data && Array.isArray(json.data.data)) ? json.data.data : [];",
 									"",
 									"pm.test(\"Transactions is array\", function () {",
 									"    pm.expect(txs).to.be.an(\"array\");",
 									"});",
 									"",
-									"if (Array.isArray(txs) && txs.length > 0 && txs[0].id) {",
+									"if (txs.length > 0 && txs[0].id) {",
 									"    pm.environment.set(\"transaction_id\", txs[0].id);",
-									"}"
+									"}",
+									""
 								],
-								"id": "05be51af-feb7-4fd7-8afe-8c206346c0b9"
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
 							}
 						}
 					],
@@ -1133,7 +1146,14 @@
 					},
 					"request": {
 						"auth": {
-							"type": "inherit"
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
 						},
 						"method": "GET",
 						"header": [

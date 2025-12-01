@@ -1290,8 +1290,30 @@
 						"disableBodyPruning": true
 					},
 					"request": {
-						"method": "GET",
-						"header": []
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"guest_name\": \"Paman Bob Updated\",\r\n  \"guest_contact\": \"081298765432\",\r\n  \"role\": \"member\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/trips/{{trip_id}}/members/{{member_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"trips",
+								"{{trip_id}}",
+								"members",
+								"{{member_id}}"
+							]
+						}
 					},
 					"response": []
 				}

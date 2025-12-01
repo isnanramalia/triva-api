@@ -1613,7 +1613,7 @@
 					]
 				},
 				{
-					"name": "New Request",
+					"name": "Update Transaction",
 					"id": "50455262-413bdcb1-96db-4ce8-a313-42c78ba0775f",
 					"protocolProfileBehavior": {
 						"disableBodyPruning": true

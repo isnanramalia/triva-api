@@ -647,6 +647,18 @@
 							"body": "{\n    \"id\": 1,\n    \"owner_id\": 1,\n    \"name\": \"Bali Trip 2025\",\n    \"description\": \"Liburan bareng geng kampus\",\n    \"currency_code\": \"IDR\",\n    \"start_date\": \"2025-12-01T00:00:00.000000Z\",\n    \"end_date\": \"2025-12-05T00:00:00.000000Z\",\n    \"public_summary_token\": null,\n    \"status\": \"planning\",\n    \"created_at\": \"2025-11-30T05:52:04.000000Z\",\n    \"updated_at\": \"2025-11-30T05:52:04.000000Z\",\n    \"members\": [\n        {\n            \"id\": 1,\n            \"trip_id\": 1,\n            \"user_id\": 1,\n            \"guest_name\": null,\n            \"guest_contact\": null,\n            \"role\": \"admin\",\n            \"balance\": \"50000.00\",\n            \"created_at\": \"2025-11-30T05:52:04.000000Z\",\n            \"updated_at\": \"2025-11-30T06:32:35.000000Z\",\n            \"user\": {\n                \"id\": 1,\n                \"name\": \"Test User\",\n                \"email\": \"test@example.com\",\n                \"email_verified_at\": \"2025-11-30T03:21:21.000000Z\",\n                \"created_at\": \"2025-11-30T03:21:21.000000Z\",\n                \"updated_at\": \"2025-11-30T03:21:21.000000Z\"\n            }\n        },\n        {\n            \"id\": 2,\n            \"trip_id\": 1,\n            \"user_id\": 2,\n            \"guest_name\": null,\n            \"guest_contact\": null,\n            \"role\": \"member\",\n            \"balance\": \"0.00\",\n            \"created_at\": \"2025-11-30T06:30:32.000000Z\",\n            \"updated_at\": \"2025-11-30T06:32:35.000000Z\",\n            \"user\": {\n                \"id\": 2,\n                \"name\": \"teman1\",\n                \"email\": \"teman1@gmail.com\",\n                \"email_verified_at\": null,\n                \"created_at\": \"2025-11-30T06:29:19.000000Z\",\n                \"updated_at\": \"2025-11-30T06:29:19.000000Z\"\n            }\n        },\n        {\n            \"id\": 3,\n            \"trip_id\": 1,\n            \"user_id\": null,\n            \"guest_name\": \"Paman Bob\",\n            \"guest_contact\": \"08123456789\",\n            \"role\": \"member\",\n            \"balance\": \"-50000.00\",\n            \"created_at\": \"2025-11-30T06:31:14.000000Z\",\n            \"updated_at\": \"2025-11-30T06:32:35.000000Z\",\n            \"user\": null\n        }\n    ],\n    \"transactions\": [\n        {\n            \"id\": 1,\n            \"trip_id\": 1,\n            \"created_by_member_id\": 1,\n            \"paid_by_member_id\": 1,\n            \"title\": \"Makan Malam\",\n            \"description\": \"Warung seafood\",\n            \"date\": \"2025-12-01T19:00:00.000000Z\",\n            \"total_amount\": \"150000.00\",\n            \"split_type\": \"equal\",\n            \"meta\": null,\n            \"created_at\": \"2025-11-30T06:31:48.000000Z\",\n            \"updated_at\": \"2025-11-30T06:31:48.000000Z\"\n        }\n    ]\n}"
 						}
 					]
+				},
+				{
+					"name": "New Request",
+					"id": "50455262-3ed3cc78-1501-487e-b9d5-acd71e6c704d",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
 				}
 			],
 			"id": "50455262-69184040-56c3-4029-8004-f9d4cce784c7",

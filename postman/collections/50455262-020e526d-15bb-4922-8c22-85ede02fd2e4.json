@@ -143,8 +143,13 @@
 						{
 							"listen": "prerequest",
 							"script": {
+								"id": "1d431e12-61c7-4169-819e-dff2ed94134c",
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
 								"packages": {},
-								"type": "text/javascript"
+								"requests": {}
 							}
 						}
 					],
@@ -169,7 +174,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"password\"\n}"
+							"raw": "{\n  \"email\": \"isna@example.com\",\n  \"password\": \"password\"\n}"
 						},
 						"url": {
 							"raw": "{{base_url}}/api/login",

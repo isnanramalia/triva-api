@@ -179,7 +179,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"email\": \"isna@example.com\",\n  \"password\": \"password\"\n}"
+							"raw": "{\n  \"email\": \"isna@gmail.com\",\n  \"password\": \"password\"\n}"
 						},
 						"url": {
 							"raw": "{{base_url}}/api/login",

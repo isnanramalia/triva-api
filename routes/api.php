@@ -37,7 +37,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::patch('/trips/{trip}/transactions/{transaction}', [TransactionController::class, 'update']);
     Route::delete('/trips/{trip}/transactions/{transaction}', [TransactionController::class, 'destroy']);
 
+    // Transactions - Smart Add (AI)
+    Route::post('/trips/{trip}/transactions/prepare-ai', [TransactionController::class, 'prepareAi']);
+    Route::post('/trips/{trip}/transactions/save-ai', [TransactionController::class, 'saveAi']);
+
     // Settlements
     Route::get('/trips/{trip}/settlements/suggestions', [SettlementController::class, 'suggest']);
     Route::post('/trips/{trip}/settlements', [SettlementController::class, 'store']);
+
 });

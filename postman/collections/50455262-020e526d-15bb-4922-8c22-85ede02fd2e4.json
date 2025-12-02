@@ -1982,7 +1982,7 @@
 			"name": "AI",
 			"item": [
 				{
-					"name": "New Request",
+					"name": "Prepare AI",
 					"id": "50455262-63d41e46-a400-497c-8871-442f97b0f3f4",
 					"protocolProfileBehavior": {
 						"disableBodyPruning": true
@@ -2003,6 +2003,18 @@
 								"prepare-ai"
 							]
 						}
+					},
+					"response": []
+				},
+				{
+					"name": "New Request",
+					"id": "50455262-4da96cf4-40fe-4e2e-9aec-3e50c408f1f1",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": []
 					},
 					"response": []
 				}

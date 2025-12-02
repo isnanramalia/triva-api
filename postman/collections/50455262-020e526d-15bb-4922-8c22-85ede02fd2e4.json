@@ -2007,6 +2007,31 @@
 					"response": []
 				},
 				{
+					"name": "Prepare AI Copy",
+					"id": "50455262-53c6af44-9049-4e4a-b677-fa9020177571",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/trips/{trip}/transactions/prepare-ai",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"trips",
+								"{trip}",
+								"transactions",
+								"prepare-ai"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "New Request",
 					"id": "50455262-4da96cf4-40fe-4e2e-9aec-3e50c408f1f1",
 					"protocolProfileBehavior": {

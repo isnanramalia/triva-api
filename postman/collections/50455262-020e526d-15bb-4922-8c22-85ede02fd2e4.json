@@ -1989,7 +1989,20 @@
 					},
 					"request": {
 						"method": "GET",
-						"header": []
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/trips/{trip}/transactions/prepare-ai",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"trips",
+								"{trip}",
+								"transactions",
+								"prepare-ai"
+							]
+						}
 					},
 					"response": []
 				}

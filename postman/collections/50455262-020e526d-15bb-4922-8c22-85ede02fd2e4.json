@@ -2007,7 +2007,7 @@
 					"response": []
 				},
 				{
-					"name": "Prepare AI Copy",
+					"name": "Save AI",
 					"id": "50455262-53c6af44-9049-4e4a-b677-fa9020177571",
 					"protocolProfileBehavior": {
 						"disableBodyPruning": true
@@ -2016,7 +2016,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{base_url}}/api/trips/{trip}/transactions/prepare-ai",
+							"raw": "{{base_url}}/api/trips/{trip}/transactions/save-ai",
 							"host": [
 								"{{base_url}}"
 							],
@@ -2025,7 +2025,7 @@
 								"trips",
 								"{trip}",
 								"transactions",
-								"prepare-ai"
+								"save-ai"
 							]
 						}
 					},

@@ -2030,18 +2030,6 @@
 						}
 					},
 					"response": []
-				},
-				{
-					"name": "New Request",
-					"id": "50455262-4da96cf4-40fe-4e2e-9aec-3e50c408f1f1",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": []
-					},
-					"response": []
 				}
 			],
 			"id": "50455262-e16375c1-8ff1-4c92-84c3-98316254b24e"

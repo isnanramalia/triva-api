@@ -20,7 +20,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"name\": \"Isna\",\r\n  \"email\": \"isna@example.com\",\r\n  \"password\": \"password\"\r\n}\r\n",
+							"raw": "{\r\n  \"name\": \"Isna\",\r\n  \"email\": \"isna@gmail.com\",\r\n  \"password\": \"password\"\r\n}\r\n",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -38,7 +38,71 @@
 							]
 						}
 					},
-					"response": []
+					"response": [
+						{
+							"id": "50455262-36b00410-93b5-4bfe-8c6b-a47a9a5927a7",
+							"name": "Register",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"name\": \"Isna\",\r\n  \"email\": \"isna@example.com\",\r\n  \"password\": \"password\"\r\n}\r\n",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/api/register",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"register"
+									]
+								}
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": null,
+							"header": [
+								{
+									"key": "Host",
+									"value": "127.0.0.1:8000"
+								},
+								{
+									"key": "Connection",
+									"value": "close"
+								},
+								{
+									"key": "X-Powered-By",
+									"value": "PHP/8.2.12"
+								},
+								{
+									"key": "Cache-Control",
+									"value": "no-cache, private"
+								},
+								{
+									"key": "Date",
+									"value": "Sun, 30 Nov 2025 07:08:32 GMT"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Access-Control-Allow-Origin",
+									"value": "*"
+								}
+							],
+							"cookie": [],
+							"responseTime": null,
+							"body": "{\n    \"status\": \"success\",\n    \"message\": \"User registered successfully.\",\n    \"user\": {\n        \"name\": \"Isna\",\n        \"email\": \"isna@example.com\",\n        \"updated_at\": \"2025-11-30T07:08:32.000000Z\",\n        \"created_at\": \"2025-11-30T07:08:32.000000Z\",\n        \"id\": 4\n    },\n    \"token\": \"1|dxqRqH9Obr8Qr6BfrSwFNfwm5iWkR2eVBdaAIdWc7cca580d\"\n}"
+						}
+					]
 				},
 				{
 					"name": "Login",
@@ -59,17 +123,22 @@
 									"    jsonData = {};",
 									"}",
 									"",
-									"pm.test(\"Response has token\", function () {",
-									"    pm.expect(jsonData).to.have.property(\"token\");",
+									"pm.test(\"Status is success\", function () {",
+									"    pm.expect(jsonData.status).to.eql(\"success\");",
 									"});",
 									"",
-									"if (jsonData.token) {",
-									"    pm.environment.set(\"token\", jsonData.token);",
+									"pm.test(\"Response has token in data\", function () {",
+									"    pm.expect(jsonData.data).to.have.property(\"token\");",
+									"});",
+									"",
+									"if (jsonData.data && jsonData.data.token) {",
+									"    pm.environment.set(\"token\", jsonData.data.token);",
 									"}",
 									"",
-									"if (jsonData.user && jsonData.user.id) {",
-									"    pm.environment.set(\"user_id\", jsonData.user.id);",
-									"}"
+									"if (jsonData.data && jsonData.data.user && jsonData.data.user.id) {",
+									"    pm.environment.set(\"user_id\", jsonData.data.user.id);",
+									"}",
+									""
 								],
 								"type": "text/javascript",
 								"packages": {},
@@ -79,8 +148,13 @@
 						{
 							"listen": "prerequest",
 							"script": {
+								"id": "1d431e12-61c7-4169-819e-dff2ed94134c",
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
 								"packages": {},
-								"type": "text/javascript"
+								"requests": {}
 							}
 						}
 					],
@@ -105,7 +179,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"password\"\n}"
+							"raw": "{\n  \"email\": \"isna@gmail.com\",\n  \"password\": \"password\"\n}"
 						},
 						"url": {
 							"raw": "{{base_url}}/api/login",
@@ -118,70 +192,6 @@
 							]
 						},
 						"description": "Login user dan mendapatkan Sanctum token.\n\nEnvironment yang digunakan:\n- base_url\n\nScript test akan menyimpan token ke environment `token`."
-					},
-					"response": []
-				},
-				{
-					"name": "Me (Get Current User)",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"id": "9b67dc93-3c11-4085-9a84-bd9acab2eee7",
-								"exec": [
-									"pm.test(\"Status code is 200\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"",
-									"let jsonData;",
-									"try {",
-									"    jsonData = pm.response.json();",
-									"} catch (e) {",
-									"    jsonData = {};",
-									"}",
-									"",
-									"pm.test(\"User object has id and email\", function () {",
-									"    pm.expect(jsonData).to.have.property(\"id\");",
-									"    pm.expect(jsonData).to.have.property(\"email\");",
-									"});"
-								],
-								"type": "text/javascript",
-								"packages": {},
-								"requests": {}
-							}
-						}
-					],
-					"id": "50455262-7f74365f-ff35-478b-b9e5-bd3770ade4e7",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"auth": {
-							"type": "inherit"
-						},
-						"method": "GET",
-						"header": [
-							{
-								"key": "Accept",
-								"value": "application/json"
-							},
-							{
-								"key": "Authorization",
-								"value": "Bearer {{token}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/api/me",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"me"
-							]
-						},
-						"description": "Mengambil data user yang sedang login berdasarkan Bearer token di header Authorization."
 					},
 					"response": []
 				},
@@ -259,20 +269,34 @@
 									"    pm.response.to.have.status(200);",
 									"});",
 									"",
-									"let data;",
+									"let json;",
 									"try {",
-									"    data = pm.response.json();",
+									"    json = pm.response.json();",
 									"} catch (e) {",
-									"    data = [];",
+									"    json = {};",
 									"}",
 									"",
-									"pm.test(\"Response is array\", function () {",
-									"    pm.expect(data).to.be.an(\"array\");",
+									"pm.test(\"Status is success\", function () {",
+									"    pm.expect(json.status).to.eql(\"success\");",
 									"});",
 									"",
-									"if (Array.isArray(data) && data.length > 0 && data[0].id) {",
-									"    pm.environment.set(\"trip_id\", data[0].id);",
-									"}"
+									"// data = paginator object",
+									"pm.test(\"Data has pagination structure\", function () {",
+									"    pm.expect(json.data).to.have.property(\"data\");",
+									"    pm.expect(json.data).to.have.property(\"current_page\");",
+									"});",
+									"",
+									"// Trips array",
+									"const trips = (json.data && Array.isArray(json.data.data)) ? json.data.data : [];",
+									"",
+									"pm.test(\"Trips is array\", function () {",
+									"    pm.expect(trips).to.be.an(\"array\");",
+									"});",
+									"",
+									"if (trips.length > 0 && trips[0].id) {",
+									"    pm.environment.set(\"trip_id\", trips[0].id);",
+									"}",
+									""
 								],
 								"type": "text/javascript",
 								"packages": {},
@@ -303,13 +327,25 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/api/trips",
+							"raw": "{{base_url}}/api/trips?per_page=10&page=1",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"api",
 								"trips"
+							],
+							"query": [
+								{
+									"key": "per_page",
+									"value": "10",
+									"type": "text"
+								},
+								{
+									"key": "page",
+									"value": "1",
+									"type": "text"
+								}
 							]
 						},
 						"description": "Menampilkan semua trip yang diikuti user saat ini (via trip_members)."
@@ -388,12 +424,20 @@
 									"    pm.response.to.have.status(201);",
 									"});",
 									"",
-									"let trip;",
+									"let json = {};",
 									"try {",
-									"    trip = pm.response.json();",
+									"    json = pm.response.json();",
 									"} catch (e) {",
-									"    trip = {};",
+									"    json = {};",
 									"}",
+									"",
+									"console.log(\"Create Trip response:\", json);",
+									"",
+									"pm.test(\"Status is success\", function () {",
+									"    pm.expect(json.status).to.eql(\"success\");",
+									"});",
+									"",
+									"const trip = json.data || json;",
 									"",
 									"pm.test(\"Trip has id and name\", function () {",
 									"    pm.expect(trip).to.have.property(\"id\");",
@@ -402,7 +446,8 @@
 									"",
 									"if (trip.id) {",
 									"    pm.environment.set(\"trip_id\", trip.id);",
-									"}"
+									"}",
+									""
 								],
 								"type": "text/javascript",
 								"packages": {},
@@ -466,19 +511,33 @@
 									"    pm.response.to.have.status(200);",
 									"});",
 									"",
-									"let trip;",
+									"let json = {};",
 									"try {",
-									"    trip = pm.response.json();",
+									"    json = pm.response.json();",
 									"} catch (e) {",
-									"    trip = {};",
+									"    json = {};",
 									"}",
 									"",
-									"pm.test(\"Trip id matches environment trip_id\", function () {",
-									"    const envId = parseInt(pm.environment.get(\"trip_id\"));",
-									"    if (!isNaN(envId)) {",
+									"console.log(\"Trip Detail response:\", json);",
+									"",
+									"pm.test(\"Status is success\", function () {",
+									"    pm.expect(json.status).to.eql(\"success\");",
+									"});",
+									"",
+									"const trip = json.data || json;",
+									"",
+									"pm.test(\"Trip has id\", function () {",
+									"    pm.expect(trip).to.have.property(\"id\");",
+									"});",
+									"",
+									"// Optional: cek id sesuai env",
+									"const envId = parseInt(pm.environment.get(\"trip_id\"));",
+									"if (!isNaN(envId)) {",
+									"    pm.test(\"Trip id matches environment trip_id\", function () {",
 									"        pm.expect(trip.id).to.eql(envId);",
-									"    }",
-									"});"
+									"    });",
+									"}",
+									""
 								],
 								"type": "text/javascript",
 								"packages": {},
@@ -583,6 +642,150 @@
 							"body": "{\n    \"id\": 1,\n    \"owner_id\": 1,\n    \"name\": \"Bali Trip 2025\",\n    \"description\": \"Liburan bareng geng kampus\",\n    \"currency_code\": \"IDR\",\n    \"start_date\": \"2025-12-01T00:00:00.000000Z\",\n    \"end_date\": \"2025-12-05T00:00:00.000000Z\",\n    \"public_summary_token\": null,\n    \"status\": \"planning\",\n    \"created_at\": \"2025-11-30T05:52:04.000000Z\",\n    \"updated_at\": \"2025-11-30T05:52:04.000000Z\",\n    \"members\": [\n        {\n            \"id\": 1,\n            \"trip_id\": 1,\n            \"user_id\": 1,\n            \"guest_name\": null,\n            \"guest_contact\": null,\n            \"role\": \"admin\",\n            \"balance\": \"50000.00\",\n            \"created_at\": \"2025-11-30T05:52:04.000000Z\",\n            \"updated_at\": \"2025-11-30T06:32:35.000000Z\",\n            \"user\": {\n                \"id\": 1,\n                \"name\": \"Test User\",\n                \"email\": \"test@example.com\",\n                \"email_verified_at\": \"2025-11-30T03:21:21.000000Z\",\n                \"created_at\": \"2025-11-30T03:21:21.000000Z\",\n                \"updated_at\": \"2025-11-30T03:21:21.000000Z\"\n            }\n        },\n        {\n            \"id\": 2,\n            \"trip_id\": 1,\n            \"user_id\": 2,\n            \"guest_name\": null,\n            \"guest_contact\": null,\n            \"role\": \"member\",\n            \"balance\": \"0.00\",\n            \"created_at\": \"2025-11-30T06:30:32.000000Z\",\n            \"updated_at\": \"2025-11-30T06:32:35.000000Z\",\n            \"user\": {\n                \"id\": 2,\n                \"name\": \"teman1\",\n                \"email\": \"teman1@gmail.com\",\n                \"email_verified_at\": null,\n                \"created_at\": \"2025-11-30T06:29:19.000000Z\",\n                \"updated_at\": \"2025-11-30T06:29:19.000000Z\"\n            }\n        },\n        {\n            \"id\": 3,\n            \"trip_id\": 1,\n            \"user_id\": null,\n            \"guest_name\": \"Paman Bob\",\n            \"guest_contact\": \"08123456789\",\n            \"role\": \"member\",\n            \"balance\": \"-50000.00\",\n            \"created_at\": \"2025-11-30T06:31:14.000000Z\",\n            \"updated_at\": \"2025-11-30T06:32:35.000000Z\",\n            \"user\": null\n        }\n    ],\n    \"transactions\": [\n        {\n            \"id\": 1,\n            \"trip_id\": 1,\n            \"created_by_member_id\": 1,\n            \"paid_by_member_id\": 1,\n            \"title\": \"Makan Malam\",\n            \"description\": \"Warung seafood\",\n            \"date\": \"2025-12-01T19:00:00.000000Z\",\n            \"total_amount\": \"150000.00\",\n            \"split_type\": \"equal\",\n            \"meta\": null,\n            \"created_at\": \"2025-11-30T06:31:48.000000Z\",\n            \"updated_at\": \"2025-11-30T06:31:48.000000Z\"\n        }\n    ]\n}"
 						}
 					]
+				},
+				{
+					"name": "Update Trip",
+					"id": "50455262-76ce5a0b-d733-4eb6-8b10-09e5ae3f60c9",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Bali Trip 2025 (rev)\",\r\n  \"description\": \"Update deskripsi\",\r\n  \"currency_code\": \"IDR\",\r\n  \"start_date\": \"2025-12-02\",\r\n  \"end_date\": \"2025-12-06\",\r\n  \"status\": \"ongoing\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/trips/{{trip_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"trips",
+								"{{trip_id}}"
+							]
+						}
+					},
+					"response": [
+						{
+							"id": "50455262-3246fd65-6387-48cb-9be7-f56a03cddcde",
+							"name": "New Request",
+							"originalRequest": {
+								"method": "PATCH",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"name\": \"Bali Trip 2025 (rev)\",\r\n  \"description\": \"Update deskripsi\",\r\n  \"currency_code\": \"IDR\",\r\n  \"start_date\": \"2025-12-02\",\r\n  \"end_date\": \"2025-12-06\",\r\n  \"status\": \"ongoing\"\r\n}\r\n",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/api/trips/{{trip_id}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"trips",
+										"{{trip_id}}"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": null,
+							"header": [
+								{
+									"key": "Host",
+									"value": "127.0.0.1:8000"
+								},
+								{
+									"key": "Connection",
+									"value": "close"
+								},
+								{
+									"key": "X-Powered-By",
+									"value": "PHP/8.2.12"
+								},
+								{
+									"key": "Cache-Control",
+									"value": "no-cache, private"
+								},
+								{
+									"key": "Date",
+									"value": "Mon, 01 Dec 2025 10:16:17 GMT"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Access-Control-Allow-Origin",
+									"value": "*"
+								}
+							],
+							"cookie": [],
+							"responseTime": null,
+							"body": "{\n    \"status\": \"success\",\n    \"data\": {\n        \"id\": 4,\n        \"owner_id\": 4,\n        \"name\": \"Bali Trip 2025 (rev)\",\n        \"description\": \"Update deskripsi\",\n        \"currency_code\": \"IDR\",\n        \"start_date\": \"2025-12-02T00:00:00.000000Z\",\n        \"end_date\": \"2025-12-06T00:00:00.000000Z\",\n        \"public_summary_token\": \"rIdr0Hn9mvbXnKdNZSN45avBYClxHHAl\",\n        \"status\": \"ongoing\",\n        \"created_at\": \"2025-12-01T10:00:35.000000Z\",\n        \"updated_at\": \"2025-12-01T10:16:17.000000Z\"\n    }\n}"
+						}
+					]
+				},
+				{
+					"name": "Delete Trip",
+					"id": "50455262-837aed0e-adbb-4dac-a147-e8e8734216fb",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/trips/{{trip_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"trips",
+								"{{trip_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Public Summary (Guest link, tanpa token)",
+					"id": "50455262-e9e604ef-f2d2-489d-9e5d-4d12c3a0b849",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/public/trips/{{public_summary_token}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"public",
+								"trips",
+								"{{public_summary_token}}"
+							]
+						}
+					},
+					"response": []
 				}
 			],
 			"id": "50455262-69184040-56c3-4029-8004-f9d4cce784c7",
@@ -638,20 +841,25 @@
 									"    pm.response.to.have.status(200);",
 									"});",
 									"",
-									"let members;",
+									"let json;",
 									"try {",
-									"    members = pm.response.json();",
+									"    json = pm.response.json();",
 									"} catch (e) {",
-									"    members = [];",
+									"    json = {};",
 									"}",
 									"",
-									"pm.test(\"Members is array\", function () {",
-									"    pm.expect(members).to.be.an(\"array\");",
+									"pm.test(\"Status is success\", function () {",
+									"    pm.expect(json.status).to.eql(\"success\");",
 									"});",
 									"",
-									"if (Array.isArray(members) && members.length > 0 && members[0].id) {",
-									"    pm.environment.set(\"member_id\", members[0].id);",
-									"}"
+									"pm.test(\"Members is array\", function () {",
+									"    pm.expect(json.data).to.be.an(\"array\");",
+									"});",
+									"",
+									"if (Array.isArray(json.data) && json.data.length > 0 && json.data[0].id) {",
+									"    pm.environment.set(\"member_id\", json.data[0].id);",
+									"}",
+									""
 								],
 								"type": "text/javascript",
 								"packages": {},
@@ -768,19 +976,32 @@
 								"id": "7baf47fb-7d40-4838-ae6d-b22f7880061e",
 								"exec": [
 									"pm.test(\"Status code is 200 or 201\", function () {",
-									"    pm.expect([200,201]).to.include(pm.response.code);",
+									"    pm.expect([200, 201]).to.include(pm.response.code);",
 									"});",
 									"",
-									"let member;",
+									"let json = {};",
 									"try {",
-									"    member = pm.response.json();",
+									"    json = pm.response.json();",
 									"} catch (e) {",
-									"    member = {};",
+									"    json = {};",
 									"}",
+									"",
+									"console.log(\"Add Member (User) response:\", json);",
+									"",
+									"pm.test(\"Status is success\", function () {",
+									"    pm.expect(json.status).to.eql(\"success\");",
+									"});",
+									"",
+									"const member = json.data || json;",
+									"",
+									"pm.test(\"Member has id\", function () {",
+									"    pm.expect(member).to.have.property(\"id\");",
+									"});",
 									"",
 									"if (member.id) {",
 									"    pm.environment.set(\"member_id_user\", member.id);",
-									"}"
+									"}",
+									""
 								],
 								"type": "text/javascript",
 								"packages": {},
@@ -816,7 +1037,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"type\": \"user\",\n  \"email\": \"teman2@gmail.com\",\n  \"role\": \"member\"\n}"
+							"raw": "{\n  \"type\": \"user\",\n  \"email\": \"isna2@gmail.com\",\n  \"role\": \"member\"\n}"
 						},
 						"url": {
 							"raw": "{{base_url}}/api/trips/{{trip_id}}/members",
@@ -916,16 +1137,29 @@
 									"    pm.response.to.have.status(201);",
 									"});",
 									"",
-									"let guest;",
+									"let json = {};",
 									"try {",
-									"    guest = pm.response.json();",
+									"    json = pm.response.json();",
 									"} catch (e) {",
-									"    guest = {};",
+									"    json = {};",
 									"}",
+									"",
+									"console.log(\"Add Member (Guest) response:\", json);",
+									"",
+									"pm.test(\"Status is success\", function () {",
+									"    pm.expect(json.status).to.eql(\"success\");",
+									"});",
+									"",
+									"const guest = json.data || json;",
+									"",
+									"pm.test(\"Guest member has id\", function () {",
+									"    pm.expect(guest).to.have.property(\"id\");",
+									"});",
 									"",
 									"if (guest.id) {",
 									"    pm.environment.set(\"guest_member_id\", guest.id);",
-									"}"
+									"}",
+									""
 								],
 								"type": "text/javascript",
 								"packages": {},
@@ -1048,6 +1282,89 @@
 							"body": "{\n    \"trip_id\": 1,\n    \"guest_name\": \"Paman Bob\",\n    \"guest_contact\": \"08123456789\",\n    \"role\": \"member\",\n    \"balance\": \"0.00\",\n    \"updated_at\": \"2025-11-30T06:31:14.000000Z\",\n    \"created_at\": \"2025-11-30T06:31:14.000000Z\",\n    \"id\": 3,\n    \"user\": null\n}"
 						}
 					]
+				},
+				{
+					"name": "Update Member",
+					"id": "50455262-59fa151d-6604-455d-9f56-c01520c7e627",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"guest_name\": \"Paman Bob Updated\",\r\n  \"guest_contact\": \"081298765432\",\r\n  \"role\": \"member\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/trips/{{trip_id}}/members/{{member_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"trips",
+								"{{trip_id}}",
+								"members",
+								"{{member_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Member",
+					"id": "50455262-4fe9320a-2527-48ae-9001-dfc965625307",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/trips/{{trip_id}}/transactions?per_page=20&page=1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"trips",
+								"{{trip_id}}",
+								"transactions"
+							],
+							"query": [
+								{
+									"key": "per_page",
+									"value": "20"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
 				}
 			],
 			"id": "50455262-e0316a5b-df98-4206-a4da-c5257ffa6a76"
@@ -1061,28 +1378,41 @@
 						{
 							"listen": "test",
 							"script": {
-								"type": "text/javascript",
+								"id": "05be51af-feb7-4fd7-8afe-8c206346c0b9",
 								"exec": [
 									"pm.test(\"Status code is 200\", function () {",
 									"    pm.response.to.have.status(200);",
 									"});",
 									"",
-									"let txs;",
+									"let json;",
 									"try {",
-									"    txs = pm.response.json();",
+									"    json = pm.response.json();",
 									"} catch (e) {",
-									"    txs = [];",
+									"    json = {};",
 									"}",
+									"",
+									"pm.test(\"Status is success\", function () {",
+									"    pm.expect(json.status).to.eql(\"success\");",
+									"});",
+									"",
+									"pm.test(\"Transactions has pagination structure\", function () {",
+									"    pm.expect(json.data).to.have.property(\"data\");",
+									"});",
+									"",
+									"const txs = (json.data && Array.isArray(json.data.data)) ? json.data.data : [];",
 									"",
 									"pm.test(\"Transactions is array\", function () {",
 									"    pm.expect(txs).to.be.an(\"array\");",
 									"});",
 									"",
-									"if (Array.isArray(txs) && txs.length > 0 && txs[0].id) {",
+									"if (txs.length > 0 && txs[0].id) {",
 									"    pm.environment.set(\"transaction_id\", txs[0].id);",
-									"}"
+									"}",
+									""
 								],
-								"id": "05be51af-feb7-4fd7-8afe-8c206346c0b9"
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
 							}
 						}
 					],
@@ -1092,7 +1422,14 @@
 					},
 					"request": {
 						"auth": {
-							"type": "inherit"
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
 						},
 						"method": "GET",
 						"header": [
@@ -1129,12 +1466,20 @@
 									"    pm.response.to.have.status(201);",
 									"});",
 									"",
-									"let tx;",
+									"let json = {};",
 									"try {",
-									"    tx = pm.response.json();",
+									"    json = pm.response.json();",
 									"} catch (e) {",
-									"    tx = {};",
+									"    json = {};",
 									"}",
+									"",
+									"console.log(\"Create Transaction response:\", json);",
+									"",
+									"pm.test(\"Status is success\", function () {",
+									"    pm.expect(json.status).to.eql(\"success\");",
+									"});",
+									"",
+									"const tx = json.data || json;",
 									"",
 									"pm.test(\"Transaction has id\", function () {",
 									"    pm.expect(tx).to.have.property(\"id\");",
@@ -1142,7 +1487,8 @@
 									"",
 									"if (tx.id) {",
 									"    pm.environment.set(\"transaction_id\", tx.id);",
-									"}"
+									"}",
+									""
 								],
 								"type": "text/javascript",
 								"packages": {},
@@ -1265,6 +1611,56 @@
 							"body": "{\n    \"trip_id\": 1,\n    \"created_by_member_id\": 1,\n    \"paid_by_member_id\": 1,\n    \"title\": \"Makan Malam\",\n    \"description\": \"Warung seafood\",\n    \"date\": \"2025-12-01T19:00:00.000000Z\",\n    \"total_amount\": \"150000.00\",\n    \"split_type\": \"equal\",\n    \"meta\": null,\n    \"updated_at\": \"2025-11-30T06:31:48.000000Z\",\n    \"created_at\": \"2025-11-30T06:31:48.000000Z\",\n    \"id\": 1,\n    \"paid_by\": {\n        \"id\": 1,\n        \"trip_id\": 1,\n        \"user_id\": 1,\n        \"guest_name\": null,\n        \"guest_contact\": null,\n        \"role\": \"admin\",\n        \"balance\": \"100000.00\",\n        \"created_at\": \"2025-11-30T05:52:04.000000Z\",\n        \"updated_at\": \"2025-11-30T06:31:48.000000Z\"\n    },\n    \"splits\": [\n        {\n            \"id\": 1,\n            \"transaction_id\": 1,\n            \"member_id\": 1,\n            \"amount\": \"50000.00\",\n            \"created_at\": \"2025-11-30T06:31:48.000000Z\",\n            \"updated_at\": \"2025-11-30T06:31:48.000000Z\",\n            \"member\": {\n                \"id\": 1,\n                \"trip_id\": 1,\n                \"user_id\": 1,\n                \"guest_name\": null,\n                \"guest_contact\": null,\n                \"role\": \"admin\",\n                \"balance\": \"100000.00\",\n                \"created_at\": \"2025-11-30T05:52:04.000000Z\",\n                \"updated_at\": \"2025-11-30T06:31:48.000000Z\"\n            }\n        },\n        {\n            \"id\": 2,\n            \"transaction_id\": 1,\n            \"member_id\": 2,\n            \"amount\": \"50000.00\",\n            \"created_at\": \"2025-11-30T06:31:48.000000Z\",\n            \"updated_at\": \"2025-11-30T06:31:48.000000Z\",\n            \"member\": {\n                \"id\": 2,\n                \"trip_id\": 1,\n                \"user_id\": 2,\n                \"guest_name\": null,\n                \"guest_contact\": null,\n                \"role\": \"member\",\n                \"balance\": \"-50000.00\",\n                \"created_at\": \"2025-11-30T06:30:32.000000Z\",\n                \"updated_at\": \"2025-11-30T06:31:48.000000Z\"\n            }\n        },\n        {\n            \"id\": 3,\n            \"transaction_id\": 1,\n            \"member_id\": 3,\n            \"amount\": \"50000.00\",\n            \"created_at\": \"2025-11-30T06:31:48.000000Z\",\n            \"updated_at\": \"2025-11-30T06:31:48.000000Z\",\n            \"member\": {\n                \"id\": 3,\n                \"trip_id\": 1,\n                \"user_id\": null,\n                \"guest_name\": \"Paman Bob\",\n                \"guest_contact\": \"08123456789\",\n                \"role\": \"member\",\n                \"balance\": \"-50000.00\",\n                \"created_at\": \"2025-11-30T06:31:14.000000Z\",\n                \"updated_at\": \"2025-11-30T06:31:48.000000Z\"\n            }\n        }\n    ]\n}"
 						}
 					]
+				},
+				{
+					"name": "Update Transaction",
+					"id": "50455262-413bdcb1-96db-4ce8-a313-42c78ba0775f",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/trips/{{trip_id}}/transactions/{{transaction_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"trips",
+								"{{trip_id}}",
+								"transactions",
+								"{{transaction_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Transaction",
+					"id": "50455262-8ee8d7cd-5826-4341-9d11-5747f666b3de",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/trips/{{trip_id}}/transactions/{{transaction_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"trips",
+								"{{trip_id}}",
+								"transactions",
+								"{{transaction_id}}"
+							]
+						}
+					},
+					"response": []
 				}
 			],
 			"id": "50455262-126a9af6-57fb-4ee3-bf11-a22214770de1"
@@ -1284,18 +1680,24 @@
 									"    pm.response.to.have.status(200);",
 									"});",
 									"",
-									"let suggestions;",
+									"let json;",
 									"try {",
-									"    suggestions = pm.response.json();",
+									"    json = pm.response.json();",
 									"} catch (e) {",
-									"    suggestions = [];",
+									"    json = {};",
 									"}",
+									"",
+									"pm.test(\"Status is success\", function () {",
+									"    pm.expect(json.status).to.eql(\"success\");",
+									"});",
+									"",
+									"const suggestions = Array.isArray(json.data) ? json.data : [];",
 									"",
 									"pm.test(\"Suggestions is array\", function () {",
 									"    pm.expect(suggestions).to.be.an(\"array\");",
 									"});",
 									"",
-									"if (Array.isArray(suggestions) && suggestions.length > 0) {",
+									"if (suggestions.length > 0) {",
 									"    const first = suggestions[0];",
 									"    if (first.from_member_id) {",
 									"        pm.environment.set(\"settle_from_member_id\", first.from_member_id);",
@@ -1306,7 +1708,8 @@
 									"    if (first.amount) {",
 									"        pm.environment.set(\"settle_amount\", first.amount);",
 									"    }",
-									"}"
+									"}",
+									""
 								],
 								"type": "text/javascript",
 								"packages": {},
@@ -1428,17 +1831,27 @@
 									"    pm.response.to.have.status(201);",
 									"});",
 									"",
-									"let st;",
+									"let json = {};",
 									"try {",
-									"    st = pm.response.json();",
+									"    json = pm.response.json();",
 									"} catch (e) {",
-									"    st = {};",
+									"    json = {};",
 									"}",
 									"",
-									"pm.test(\"Settlement has id and status confirmed\", function () {",
+									"console.log(\"Create Settlement response:\", json);",
+									"",
+									"pm.test(\"API status is success\", function () {",
+									"    pm.expect(json.status).to.eql(\"success\");",
+									"});",
+									"",
+									"const st = json.data || json;",
+									"",
+									"pm.test(\"Settlement has id and confirmed status\", function () {",
 									"    pm.expect(st).to.have.property(\"id\");",
+									"    pm.expect(st).to.have.property(\"status\");",
 									"    pm.expect(st.status).to.eql(\"confirmed\");",
-									"});"
+									"});",
+									""
 								],
 								"type": "text/javascript",
 								"packages": {},

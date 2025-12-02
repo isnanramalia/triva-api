@@ -1980,7 +1980,20 @@
 		},
 		{
 			"name": "AI",
-			"item": [],
+			"item": [
+				{
+					"name": "New Request",
+					"id": "50455262-63d41e46-a400-497c-8871-442f97b0f3f4",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				}
+			],
 			"id": "50455262-e16375c1-8ff1-4c92-84c3-98316254b24e"
 		}
 	],

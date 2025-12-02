@@ -1977,6 +1977,62 @@
 				}
 			],
 			"id": "50455262-2c429681-c844-4d51-9877-592c10ab86b8"
+		},
+		{
+			"name": "AI",
+			"item": [
+				{
+					"name": "Prepare AI",
+					"id": "50455262-63d41e46-a400-497c-8871-442f97b0f3f4",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/trips/{trip}/transactions/prepare-ai",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"trips",
+								"{trip}",
+								"transactions",
+								"prepare-ai"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Save AI",
+					"id": "50455262-53c6af44-9049-4e4a-b677-fa9020177571",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/trips/{trip}/transactions/save-ai",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"trips",
+								"{trip}",
+								"transactions",
+								"save-ai"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"id": "50455262-e16375c1-8ff1-4c92-84c3-98316254b24e"
 		}
 	],
 	"auth": {

@@ -2,46 +2,88 @@
 
 namespace App\Services;
 
-use App\Models\Trip;
-use App\Models\TripMember;
 use App\Models\Transaction;
 use App\Models\Settlement;
 
 class TripBalanceService
 {
-    public function recalculate(Trip $trip): void
+    /**
+     * Menghitung status hutang (Total vs Terbayar).
+     * Output mencakup yang SUDAH LUNAS (Paid).
+     */
+    public function calculateTripBalances(int $tripId): array
     {
-        // reset semua balance ke 0
-        TripMember::where('trip_id', $trip->id)->update(['balance' => 0]);
+        // 1. Tampung Data
+        $debts = [];    // [creditor][debtor] = total_hutang
+        $payments = []; // [creditor][debtor] = total_sudah_dibayar
 
-        // proses semua transaksi
-        $transactions = Transaction::with('splits')
-            ->where('trip_id', $trip->id)
-            ->get();
+        // 2. HITUNG TOTAL HUTANG (Dari Transaksi)
+        $transactions = Transaction::with(['splits:transaction_id,member_id,amount'])
+            ->where('trip_id', $tripId)
+            ->get(['id', 'paid_by_member_id']);
 
         foreach ($transactions as $tx) {
-            // +total untuk payer
-            TripMember::where('id', $tx->paid_by_member_id)
-                ->increment('balance', $tx->total_amount);
+            $payerId = $tx->paid_by_member_id;
 
-            // -amount untuk setiap member yang ikut split
             foreach ($tx->splits as $split) {
-                TripMember::where('id', $split->member_id)
-                    ->decrement('balance', $split->amount);
+                $debtorId = $split->member_id;
+                $amount = (float) $split->amount;
+
+                if ($payerId === $debtorId)
+                    continue;
+
+                if (!isset($debts[$payerId][$debtorId])) {
+                    $debts[$payerId][$debtorId] = 0;
+                }
+                $debts[$payerId][$debtorId] += $amount;
             }
         }
 
-        // proses semua settlement yang sudah dikonfirmasi
-        $settlements = Settlement::where('trip_id', $trip->id)
+        // 3. HITUNG TOTAL PEMBAYARAN (Dari Settlement)
+        $settlements = Settlement::where('trip_id', $tripId)
             ->where('status', 'confirmed')
-            ->get();
+            ->get(['from_member_id', 'to_member_id', 'amount']);
 
-        foreach ($settlements as $st) {
-            TripMember::where('id', $st->from_member_id)
-                ->increment('balance', $st->amount);
+        foreach ($settlements as $s) {
+            $creditorId = $s->to_member_id; // Penerima Uang
+            $debtorId = $s->from_member_id; // Pengirim Uang
+            $amount = (float) $s->amount;
 
-            TripMember::where('id', $st->to_member_id)
-                ->decrement('balance', $st->amount);
+            if (!isset($payments[$creditorId][$debtorId])) {
+                $payments[$creditorId][$debtorId] = 0;
+            }
+            $payments[$creditorId][$debtorId] += $amount;
         }
+
+        // 4. GABUNGKAN DATA & TENTUKAN STATUS
+        $results = [];
+
+        foreach ($debts as $creditorId => $debtorList) {
+            foreach ($debtorList as $debtorId => $totalDebt) {
+
+                $totalPaid = $payments[$creditorId][$debtorId] ?? 0;
+                $remaining = $totalDebt - $totalPaid;
+
+                // Tentukan status
+                // Toleransi floating point 0.01
+                if ($remaining <= 0.01) {
+                    $status = 'paid';
+                    $remaining = 0; // Rapikan minus kecil
+                } else {
+                    $status = 'unpaid';
+                }
+
+                $results[] = [
+                    'from_member_id' => $debtorId,
+                    'to_member_id' => $creditorId,
+                    'total_amount' => $totalDebt,  // Hutang Awal
+                    'paid_amount' => $totalPaid,  // Sudah Dibayar
+                    'remaining_amount' => $remaining,  // Sisa
+                    'status' => $status      // 'paid' | 'unpaid'
+                ];
+            }
+        }
+
+        return $results;
     }
 }

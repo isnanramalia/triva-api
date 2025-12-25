@@ -15,6 +15,8 @@ class Transaction extends Model
         'paid_by_member_id',
         'title',
         'description',
+        'emoji',
+        'category',
         'date',
         'total_amount',
         'split_type',
@@ -22,9 +24,9 @@ class Transaction extends Model
     ];
 
     protected $casts = [
-        'date'        => 'datetime',
-        'total_amount'=> 'decimal:2',
-        'meta'        => 'array',
+        'date' => 'datetime',
+        'total_amount' => 'decimal:2',
+        'meta' => 'array',
     ];
 
     // === RELATIONSHIPS ===

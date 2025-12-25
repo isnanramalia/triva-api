@@ -13,6 +13,8 @@ class Trip extends Model
         'owner_id',
         'name',
         'description',
+        'emoji',
+        'cover_url',
         'currency_code',
         'start_date',
         'end_date',
@@ -22,7 +24,7 @@ class Trip extends Model
 
     protected $casts = [
         'start_date' => 'date',
-        'end_date'   => 'date',
+        'end_date' => 'date',
     ];
 
     // === RELATIONSHIPS ===

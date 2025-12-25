@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TripController;
@@ -17,6 +18,10 @@ Route::get('/public/trips/{token}', [TripController::class, 'publicSummary']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', [AuthController::class, 'me']);
     Route::post('/logout', [AuthController::class, 'logout']);
+    
+    // User
+    Route::get('/users', [UserController::class, 'index']);
+    
 
     // Trips
     Route::get('/trips', [TripController::class, 'index']);
@@ -24,6 +29,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/trips/{trip}', [TripController::class, 'show']);
     Route::patch('/trips/{trip}', [TripController::class, 'update']);
     Route::delete('/trips/{trip}', [TripController::class, 'destroy']);
+    Route::get('/trips/{trip}/my-balances', [TripController::class, 'myBalances']);
+    Route::get('/trips/{trip}/summary', [TripController::class, 'summary']);
 
     // Trip members
     Route::get('/trips/{trip}/members', [TripMemberController::class, 'index']);

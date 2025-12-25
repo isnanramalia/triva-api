@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Settlement;
 use App\Models\Trip;
 use App\Models\TripMember;
+use App\Models\User;
+use App\Services\TripBalanceService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -26,15 +29,15 @@ class TripController extends Controller
             }
 
             $trips = Trip::whereHas('members', function ($q) use ($user) {
-                    $q->where('user_id', $user->id);
-                })
+                $q->where('user_id', $user->id);
+            })
                 ->withCount('members')
                 ->orderByDesc('created_at')
                 ->paginate($perPage);
 
             return response()->json([
                 'status' => 'success',
-                'data'   => $trips, // paginator bawaan Laravel
+                'data' => $trips, // paginator bawaan Laravel
             ]);
 
         } catch (\Exception $e) {
@@ -42,7 +45,7 @@ class TripController extends Controller
             return response()->json([
                 'status' => 'error',
                 'message' => 'Internal server error',
-                'detail'  => config('app.debug') ? $e->getMessage() : null,
+                'detail' => config('app.debug') ? $e->getMessage() : null,
             ], 500);
         }
     }
@@ -56,87 +59,85 @@ class TripController extends Controller
             $user = $request->user();
 
             $data = $request->validate([
-                'name'          => 'required|string|max:255',
-                'description'   => 'nullable|string',
+                'name' => 'required|string|max:255',
+                'description' => 'nullable|string',
+                'cover_url' => 'nullable|url',
                 'currency_code' => 'nullable|string|size:3',
-                'start_date'    => 'nullable|date',
-                'end_date'      => 'nullable|date',
+                'start_date' => 'nullable|date',
+                'end_date' => 'nullable|date',
             ]);
 
             $trip = Trip::create([
-                'owner_id'            => $user->id,
-                'name'                => $data['name'],
-                'description'         => $data['description'] ?? null,
-                'currency_code'       => $data['currency_code'] ?? 'IDR',
-                'start_date'          => $data['start_date'] ?? null,
-                'end_date'            => $data['end_date'] ?? null,
-                'status'              => 'planning',
-                'public_summary_token'=> Str::random(32),
+                'owner_id' => $user->id,
+                'name' => $data['name'],
+                'cover_url' => $data['cover_url'] ?? null,
+                'emoji' => $data['emoji'] ?? '✈️',
+                'description' => $data['description'] ?? null,
+                'currency_code' => $data['currency_code'] ?? 'IDR',
+                'start_date' => $data['start_date'] ?? null,
+                'end_date' => $data['end_date'] ?? null,
+                'status' => 'planning',
+                'public_summary_token' => Str::random(32),
             ]);
 
             TripMember::create([
                 'trip_id' => $trip->id,
                 'user_id' => $user->id,
-                'role'    => 'admin',
+                'role' => 'admin',
                 'balance' => 0,
             ]);
 
             return response()->json([
                 'status' => 'success',
-                'data'   => $trip,
+                'data' => $trip,
             ], 201);
 
         } catch (\Illuminate\Validation\ValidationException $e) {
 
             return response()->json([
-                'status'  => 'error',
+                'status' => 'error',
                 'message' => 'Validation failed',
-                'errors'  => $e->errors(),
+                'errors' => $e->errors(),
             ], 422);
 
         } catch (\Exception $e) {
 
             return response()->json([
-                'status'  => 'error',
+                'status' => 'error',
                 'message' => 'Internal server error',
-                'detail'  => config('app.debug') ? $e->getMessage() : null,
+                'detail' => config('app.debug') ? $e->getMessage() : null,
             ], 500);
         }
     }
 
-    /**
-     * Detail 1 trip (hanya untuk member).
-     */
     public function show(Request $request, Trip $trip)
     {
         try {
             $user = $request->user();
 
-            $isMember = $trip->members()->where('user_id', $user->id)->exists();
-            if (!$isMember) {
-                return response()->json([
-                    'status'  => 'error',
-                    'message' => 'Forbidden',
-                ], 403);
+            // 1. Cek User Member
+            if (!$trip->members()->where('user_id', $user->id)->exists()) {
+                return response()->json(['status' => 'error', 'message' => 'Forbidden'], 403);
             }
 
+            // 2. Load Data Lengkap (PERBAIKAN UTAMA DISINI)
+            // Kita HAPUS mapping manual yang membuang data splits
             $trip->load([
                 'members.user',
-                'transactions' => fn ($q) => $q->latest()->limit(10),
+                'transactions' => function ($query) {
+                    $query->latest()
+                        ->limit(20)
+                        ->with(['splits', 'paidBy.user']); // ✅ INI WAJIB ADA
+                }
             ]);
 
             return response()->json([
                 'status' => 'success',
-                'data'   => $trip,
+                'data' => $trip,
             ]);
 
         } catch (\Exception $e) {
-
-            return response()->json([
-                'status'  => 'error',
-                'message' => 'Internal server error',
-                'detail'  => config('app.debug') ? $e->getMessage() : null,
-            ], 500);
+            return response()->json(['status' => 'error', 'message' => 'Internal server error'], 500);
         }
     }
 
@@ -150,18 +151,19 @@ class TripController extends Controller
 
             if ($trip->owner_id !== $user->id) {
                 return response()->json([
-                    'status'  => 'error',
+                    'status' => 'error',
                     'message' => 'Only owner can update this trip',
                 ], 403);
             }
 
             $data = $request->validate([
-                'name'          => 'sometimes|required|string|max:255',
-                'description'   => 'nullable|string',
+                'name' => 'sometimes|required|string|max:255',
+                'cover_url' => 'nullable|url',
+                'description' => 'nullable|string',
                 'currency_code' => 'nullable|string|size:3',
-                'start_date'    => 'nullable|date',
-                'end_date'      => 'nullable|date',
-                'status'        => 'nullable|in:planning,ongoing,finished,cancelled',
+                'start_date' => 'nullable|date',
+                'end_date' => 'nullable|date',
+                'status' => 'nullable|in:planning,ongoing,finished,cancelled',
             ]);
 
             $trip->fill($data);
@@ -169,23 +171,23 @@ class TripController extends Controller
 
             return response()->json([
                 'status' => 'success',
-                'data'   => $trip,
+                'data' => $trip,
             ]);
 
         } catch (\Illuminate\Validation\ValidationException $e) {
 
             return response()->json([
-                'status'  => 'error',
+                'status' => 'error',
                 'message' => 'Validation failed',
-                'errors'  => $e->errors(),
+                'errors' => $e->errors(),
             ], 422);
 
         } catch (\Exception $e) {
 
             return response()->json([
-                'status'  => 'error',
+                'status' => 'error',
                 'message' => 'Internal server error',
-                'detail'  => config('app.debug') ? $e->getMessage() : null,
+                'detail' => config('app.debug') ? $e->getMessage() : null,
             ], 500);
         }
     }
@@ -200,7 +202,7 @@ class TripController extends Controller
 
             if ($trip->owner_id !== $user->id) {
                 return response()->json([
-                    'status'  => 'error',
+                    'status' => 'error',
                     'message' => 'Only owner can delete this trip',
                 ], 403);
             }
@@ -208,80 +210,196 @@ class TripController extends Controller
             $trip->delete();
 
             return response()->json([
-                'status'  => 'success',
+                'status' => 'success',
                 'message' => 'Trip deleted',
             ]);
 
         } catch (\Exception $e) {
 
             return response()->json([
-                'status'  => 'error',
+                'status' => 'error',
                 'message' => 'Internal server error',
-                'detail'  => config('app.debug') ? $e->getMessage() : null,
+                'detail' => config('app.debug') ? $e->getMessage() : null,
             ], 500);
         }
     }
 
-    /**
-     * Public summary (tanpa auth) untuk guest link.
-     * GET /api/public/trips/{token}
-     */
-    public function publicSummary(string $token)
+    public function myBalances(Request $request, $tripId)
     {
-        try {
-            $trip = Trip::where('public_summary_token', $token)
-                ->with(['members', 'transactions'])
-                ->first();
+        $user = $request->user();
+        $currentMember = TripMember::where('trip_id', $tripId)
+            ->where('user_id', $user->id)
+            ->firstOrFail();
+        $myMemberId = $currentMember->id;
 
-            if (!$trip) {
-                return response()->json([
-                    'status'  => 'error',
-                    'message' => 'Trip not found',
-                ], 404);
+        $allDebts = (new TripBalanceService())->calculateTripBalances($tripId);
+
+        // Kumpulkan ID untuk ambil nama
+        $involvedMemberIds = [];
+        $myDebts = [];
+
+        foreach ($allDebts as $debt) {
+            // Filter: Hanya yang berhubungan dengan saya
+            // TAPI: Tetap masukkan yang status='paid' sesuai request kamu
+
+            // A. Orang hutang ke Saya (Owes You)
+            if ($debt['to_member_id'] == $myMemberId) {
+                $myDebts[] = array_merge($debt, ['display_type' => 'owes_you', 'display_member_id' => $debt['from_member_id']]);
+                $involvedMemberIds[] = $debt['from_member_id'];
             }
 
-            $totalSpent = $trip->transactions->sum('total_amount');
-
-            $members = $trip->members->map(function ($m) {
-                return [
-                    'id'      => $m->id,
-                    'name'    => $m->user?->name ?? $m->guest_name,
-                    'balance' => (float) $m->balance,
-                    'role'    => $m->role,
-                ];
-            });
-
-            $transactions = $trip->transactions->map(function ($t) {
-                return [
-                    'id'           => $t->id,
-                    'title'        => $t->title,
-                    'date'         => $t->date,
-                    'total_amount' => (float) $t->total_amount,
-                ];
-            });
-
-            return response()->json([
-                'status' => 'success',
-                'data'   => [
-                    'trip' => [
-                        'name'          => $trip->name,
-                        'description'   => $trip->description,
-                        'currency_code' => $trip->currency_code,
-                        'status'        => $trip->status,
-                    ],
-                    'total_spent'  => (float) $totalSpent,
-                    'members'      => $members,
-                    'transactions' => $transactions,
-                ],
-            ]);
-
-        } catch (\Exception $e) {
-
-            return response()->json([
-                'status'  => 'error',
-                'message' => 'Internal server error',
-                'detail'  => config('app.debug') ? $e->getMessage() : null,
-            ], 500);
+            // B. Saya hutang ke Orang (You Owe)
+            if ($debt['from_member_id'] == $myMemberId) {
+                $myDebts[] = array_merge($debt, ['display_type' => 'you_owe', 'display_member_id' => $debt['to_member_id']]);
+                $involvedMemberIds[] = $debt['to_member_id'];
+            }
         }
+
+        // Ambil Detail Nama
+        $members = TripMember::with('user')
+            ->whereIn('id', array_unique($involvedMemberIds))
+            ->get()
+            ->keyBy('id');
+
+        $data = collect($myDebts)->map(function ($item) use ($members) {
+            $m = $members[$item['display_member_id']] ?? null;
+            $name = $m?->user ? $m->user->name : ($m?->guest_name ?? 'Unknown');
+
+            return [
+                'member_id' => $item['display_member_id'],
+                'name' => $name,
+                'avatar_url' => $m?->user ? 'https://ui-avatars.com/api/?name=' . urlencode($name) : null,
+                'type' => $item['display_type'], // 'owes_you' or 'you_owe'
+                'amount' => $item['remaining_amount'], // Yang ditampilkan SISA hutang
+                'total_amount' => $item['total_amount'],     // Total awal (opsional buat FE)
+                'status' => $item['status'],           // 'paid' or 'unpaid'
+            ];
+        })->values();
+
+        return response()->json(['status' => 'success', 'data' => $data]);
     }
+
+    public function summary(Request $request, $tripId)
+    {
+        $allDebts = (new TripBalanceService())->calculateTripBalances($tripId);
+
+        $tripMembers = TripMember::with('user')->where('trip_id', $tripId)->get();
+        $memberMap = $tripMembers->keyBy('id');
+
+        // 1. Hitung Net Balance untuk Grafik (Overview)
+        // PENTING: Gunakan 'remaining_amount' agar grafik mencerminkan kondisi SEKARANG
+        $netBalances = [];
+        foreach ($tripMembers as $m)
+            $netBalances[$m->id] = 0;
+
+        foreach ($allDebts as $debt) {
+            // Jika status paid/remaining 0, tidak mempengaruhi grafik "Siapa menanggung beban saat ini"
+            $netBalances[$debt['from_member_id']] -= $debt['remaining_amount'];
+            $netBalances[$debt['to_member_id']] += $debt['remaining_amount'];
+        }
+
+        $overview = [];
+        foreach ($netBalances as $mid => $amount) {
+            if (abs($amount) < 1)
+                continue;
+            $m = $memberMap[$mid];
+
+            $overview[] = [
+                'member_id' => $mid,
+                'name' => $m->user ? $m->user->name : $m->guest_name,
+                'amount' => $amount,
+                'is_current_user' => $m->user_id == $request->user()->id
+            ];
+        }
+
+        // 2. Settlement Plan (List Bawah)
+        // Tampilkan SEMUA (termasuk Paid)
+        $settlementPlan = collect($allDebts)->map(function ($d) use ($memberMap) {
+            $from = $memberMap[$d['from_member_id']];
+            $to = $memberMap[$d['to_member_id']];
+
+            return [
+                'from_member_id' => $d['from_member_id'],
+                'from_name' => $from->user ? $from->user->name : $from->guest_name,
+                'to_member_id' => $d['to_member_id'],
+                'to_name' => $to->user ? $to->user->name : $to->guest_name,
+                'amount' => $d['remaining_amount'], // Sisa yang harus dibayar
+                'total_orig' => $d['total_amount'],     // Hutang asli
+                'status' => $d['status']            // 'paid', 'unpaid'
+            ];
+        });
+
+        return response()->json([
+            'status' => 'success',
+            'data' => [
+                'overview' => array_values($overview),
+                'settlements' => $settlementPlan
+            ]
+        ]);
+    }
+
+    public function publicSummary(string $token)
+    {
+        $trip = Trip::where('public_summary_token', $token)->firstOrFail();
+
+        // Ambil data format baru (List of Rows)
+        $allDebts = (new TripBalanceService())->calculateTripBalances($trip->id);
+
+        // Kita hitung manual balance per member dari list tersebut
+        $memberBalances = [];
+
+        // Inisialisasi 0 untuk semua member
+        foreach ($trip->members as $m) {
+            $memberBalances[$m->user_id ?? $m->id] = 0; // Gunakan user_id atau member id sebagai key sementara
+        }
+
+        foreach ($allDebts as $debt) {
+            // Mapping ID dari service (member_id) ke logic kita
+            $fromMid = $debt['from_member_id'];
+            $toMid = $debt['to_member_id'];
+            $remain = $debt['remaining_amount'];
+
+            // Si A hutang (Minus)
+            // Kita perlu mapping member_id ke user_id (karena FE public mungkin butuh user_id/nama)
+            // Tapi agar aman, kita hitung based on member_id dulu
+        }
+
+        // --- VERSI SIMPEL YANG LEBIH AMAN ---
+        // Mapping ulang member agar mudah diakses
+        $membersMap = $trip->members->keyBy('id');
+
+        $finalMembersData = $trip->members->map(function ($m) use ($allDebts) {
+            $balance = 0;
+
+            // Loop hasil service
+            foreach ($allDebts as $debt) {
+                // Jika saya yang berhutang (remaining), balance saya berkurang
+                if ($debt['from_member_id'] == $m->id) {
+                    $balance -= $debt['remaining_amount'];
+                }
+                // Jika orang hutang ke saya (remaining), balance saya bertambah
+                if ($debt['to_member_id'] == $m->id) {
+                    $balance += $debt['remaining_amount'];
+                }
+            }
+
+            return [
+                'user_id' => $m->user_id, // Tetap kirim user_id jika ada
+                'name' => $m->user?->name ?? $m->guest_name,
+                'balance' => $balance,
+            ];
+        });
+
+        return response()->json([
+            'status' => 'success',
+            'data' => [
+                'trip' => [
+                    'name' => $trip->name,
+                    'currency_code' => $trip->currency_code,
+                ],
+                'members' => $finalMembersData,
+            ],
+        ]);
+    }
+
 }

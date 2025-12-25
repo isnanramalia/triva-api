@@ -24,14 +24,16 @@ return new class extends Migration
                   ->cascadeOnDelete();
 
             $table->string('title');
+            $table->string('emoji')->nullable(); // Contoh: 🍔
+            $table->string('category')->default('General');
             $table->text('description')->nullable();
             
             $table->dateTime('date');
 
             $table->decimal('total_amount', 14, 2);
 
-            $table->enum('split_type', ['equal', 'shares', 'itemized', 'adjustment'])
-                  ->default('equal');
+            $table->enum('split_type', ['equally', 'portion', 'custom', 'adjustment', 'itemized_ai'])
+                  ->default('equally');
 
             $table->json('meta')->nullable();
 

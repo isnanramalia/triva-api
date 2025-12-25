@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Trip;
 use App\Models\Transaction;
 use App\Models\TransactionSplit;
-use App\Services\TripBalanceService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
@@ -24,7 +23,7 @@ class TransactionController extends Controller
 
             if (!$trip->members()->where('user_id', $user->id)->exists()) {
                 return response()->json([
-                    'status'  => 'error',
+                    'status' => 'error',
                     'message' => 'Forbidden',
                 ], 403);
             }
@@ -43,15 +42,15 @@ class TransactionController extends Controller
 
             return response()->json([
                 'status' => 'success',
-                'data'   => $transactions, // paginator object
+                'data' => $transactions, // paginator object
             ]);
 
         } catch (\Exception $e) {
 
             return response()->json([
-                'status'  => 'error',
+                'status' => 'error',
                 'message' => 'Internal server error',
-                'detail'  => config('app.debug') ? $e->getMessage() : null,
+                'detail' => config('app.debug') ? $e->getMessage() : null,
             ], 500);
         }
     }
@@ -59,7 +58,7 @@ class TransactionController extends Controller
     /**
      * Create transaksi baru.
      */
-    public function store(Request $request, Trip $trip, TripBalanceService $balanceService)
+    public function store(Request $request, Trip $trip)
     {
         try {
             $user = $request->user();
@@ -67,21 +66,22 @@ class TransactionController extends Controller
             $member = $trip->members()->where('user_id', $user->id)->first();
             if (!$member) {
                 return response()->json([
-                    'status'  => 'error',
+                    'status' => 'error',
                     'message' => 'Forbidden',
                 ], 403);
             }
 
             $data = $request->validate([
-                'title'              => 'required|string|max:255',
-                'description'        => 'nullable|string',
-                'date'               => 'required|date',
-                'total_amount'       => 'required|numeric|min:0',
-                'paid_by_member_id'  => 'required|exists:trip_members,id',
-                'split_type'         => 'required|string',
-                'splits'             => 'required|array|min:1',
+                'title' => 'required|string|max:255',
+                'description' => 'nullable|string',
+                'emoji' => 'nullable|string',
+                'date' => 'required|date',
+                'total_amount' => 'required|numeric|min:0',
+                'paid_by_member_id' => 'required|exists:trip_members,id',
+                'split_type' => 'required|string',
+                'splits' => 'required|array|min:1',
                 'splits.*.member_id' => 'required|exists:trip_members,id',
-                'splits.*.amount'    => 'required|numeric|min:0',
+                'splits.*.amount' => 'required|numeric|min:0',
             ]);
 
             // Validasi: paid_by + semua splits harus bagian dari trip
@@ -89,7 +89,7 @@ class TransactionController extends Controller
 
             if (!in_array($data['paid_by_member_id'], $memberIds, true)) {
                 return response()->json([
-                    'status'  => 'error',
+                    'status' => 'error',
                     'message' => 'paid_by_member_id does not belong to this trip',
                 ], 422);
             }
@@ -98,7 +98,7 @@ class TransactionController extends Controller
             foreach ($splitMemberIds as $mid) {
                 if (!in_array($mid, $memberIds, true)) {
                     return response()->json([
-                        'status'  => 'error',
+                        'status' => 'error',
                         'message' => 'One or more split members do not belong to this trip',
                     ], 422);
                 }
@@ -107,60 +107,61 @@ class TransactionController extends Controller
             $sumSplits = collect($data['splits'])->sum('amount');
             if (abs($sumSplits - $data['total_amount']) > 0.01) {
                 return response()->json([
-                    'status'  => 'error',
+                    'status' => 'error',
                     'message' => 'Total splits must equal to total amount',
-                    'detail'  => [
+                    'detail' => [
                         'expected' => $data['total_amount'],
-                        'actual'   => $sumSplits,
+                        'actual' => $sumSplits,
                     ],
                 ], 422);
             }
 
-            $tx = DB::transaction(function () use ($trip, $member, $data, $balanceService) {
+            $tx = DB::transaction(function () use ($trip, $member, $data) {
                 $transaction = Transaction::create([
-                    'trip_id'              => $trip->id,
+                    'trip_id' => $trip->id,
                     'created_by_member_id' => $member->id,
-                    'paid_by_member_id'    => $data['paid_by_member_id'],
-                    'title'                => $data['title'],
-                    'description'          => $data['description'] ?? null,
-                    'date'                 => $data['date'],
-                    'total_amount'         => $data['total_amount'],
-                    'split_type'           => $data['split_type'],
-                    'meta'                 => null,
+                    'paid_by_member_id' => $data['paid_by_member_id'],
+                    'title' => $data['title'],
+                    'description' => $data['description'] ?? null,
+                    'emoji' => $data['emoji'] ?? null,
+                    'date' => $data['date'],
+                    'total_amount' => $data['total_amount'],
+                    'split_type' => $data['split_type'],
+                    'meta' => null,
                 ]);
 
                 foreach ($data['splits'] as $split) {
                     TransactionSplit::create([
                         'transaction_id' => $transaction->id,
-                        'member_id'      => $split['member_id'],
-                        'amount'         => $split['amount'],
+                        'member_id' => $split['member_id'],
+                        'amount' => $split['amount'],
                     ]);
                 }
 
-                $balanceService->recalculate($trip);
+                // $balanceService->recalculate($trip);
 
                 return $transaction;
             });
 
             return response()->json([
                 'status' => 'success',
-                'data'   => $tx->load(['paidBy', 'splits.member']),
+                'data' => $tx->load(['paidBy', 'splits.member']),
             ], 201);
 
         } catch (ValidationException $e) {
 
             return response()->json([
-                'status'  => 'error',
+                'status' => 'error',
                 'message' => 'Validation failed.',
-                'errors'  => $e->errors(),
+                'errors' => $e->errors(),
             ], 422);
 
         } catch (\Exception $e) {
 
             return response()->json([
-                'status'  => 'error',
+                'status' => 'error',
                 'message' => 'Internal server error.',
-                'detail'  => config('app.debug') ? $e->getMessage() : null,
+                'detail' => config('app.debug') ? $e->getMessage() : null,
             ], 500);
         }
     }
@@ -171,15 +172,14 @@ class TransactionController extends Controller
     public function update(
         Request $request,
         Trip $trip,
-        Transaction $transaction,
-        TripBalanceService $balanceService
+        Transaction $transaction
     ) {
         try {
             $user = $request->user();
 
             if ($transaction->trip_id !== $trip->id) {
                 return response()->json([
-                    'status'  => 'error',
+                    'status' => 'error',
                     'message' => 'Transaction does not belong to this trip',
                 ], 404);
             }
@@ -187,30 +187,32 @@ class TransactionController extends Controller
             $member = $trip->members()->where('user_id', $user->id)->first();
             if (!$member) {
                 return response()->json([
-                    'status'  => 'error',
+                    'status' => 'error',
                     'message' => 'Forbidden',
                 ], 403);
             }
 
             $data = $request->validate([
-                'title'              => 'sometimes|required|string|max:255',
-                'description'        => 'nullable|string',
-                'date'               => 'sometimes|required|date',
-                'total_amount'       => 'sometimes|required|numeric|min:0',
-                'paid_by_member_id'  => 'sometimes|required|exists:trip_members,id',
-                'split_type'         => 'sometimes|required|string',
-                'splits'             => 'sometimes|required|array|min:1',
+                'title' => 'sometimes|required|string|max:255',
+                'description' => 'nullable|string',
+                'emoji' => 'nullable|string',
+                'date' => 'sometimes|required|date',
+                'total_amount' => 'sometimes|required|numeric|min:0',
+                'paid_by_member_id' => 'sometimes|required|exists:trip_members,id',
+                'split_type' => 'sometimes|required|string',
+                'splits' => 'sometimes|required|array|min:1',
                 'splits.*.member_id' => 'required_with:splits|exists:trip_members,id',
-                'splits.*.amount'    => 'required_with:splits|numeric|min:0',
+                'splits.*.amount' => 'required_with:splits|numeric|min:0',
             ]);
 
             $memberIds = $trip->members()->pluck('id')->toArray();
 
-            if (array_key_exists('paid_by_member_id', $data) &&
+            if (
+                array_key_exists('paid_by_member_id', $data) &&
                 !in_array($data['paid_by_member_id'], $memberIds, true)
             ) {
                 return response()->json([
-                    'status'  => 'error',
+                    'status' => 'error',
                     'message' => 'paid_by_member_id does not belong to this trip',
                 ], 422);
             }
@@ -220,35 +222,36 @@ class TransactionController extends Controller
                 foreach ($splitMemberIds as $mid) {
                     if (!in_array($mid, $memberIds, true)) {
                         return response()->json([
-                            'status'  => 'error',
+                            'status' => 'error',
                             'message' => 'One or more split members do not belong to this trip',
                         ], 422);
                     }
                 }
 
-                $newTotal  = $data['total_amount'] ?? $transaction->total_amount;
+                $newTotal = $data['total_amount'] ?? $transaction->total_amount;
                 $sumSplits = collect($data['splits'])->sum('amount');
 
                 if (abs($sumSplits - $newTotal) > 0.01) {
                     return response()->json([
-                        'status'  => 'error',
+                        'status' => 'error',
                         'message' => 'Total splits must equal total amount',
-                        'detail'  => [
+                        'detail' => [
                             'expected' => $newTotal,
-                            'actual'   => $sumSplits,
+                            'actual' => $sumSplits,
                         ],
                     ], 422);
                 }
             }
 
-            DB::transaction(function () use ($trip, $transaction, $data, $balanceService) {
+            DB::transaction(function () use ($trip, $transaction, $data) {
 
                 $transaction->fill([
-                    'title'             => $data['title']        ?? $transaction->title,
-                    'description'       => array_key_exists('description', $data) ? $data['description'] : $transaction->description,
-                    'date'              => $data['date']         ?? $transaction->date,
-                    'total_amount'      => $data['total_amount'] ?? $transaction->total_amount,
-                    'split_type'        => $data['split_type']   ?? $transaction->split_type,
+                    'title' => $data['title'] ?? $transaction->title,
+                    'description' => array_key_exists('description', $data) ? $data['description'] : $transaction->description,
+                    'emoji' => array_key_exists('emoji', $data) ? $data['emoji'] : $transaction->emoji,
+                    'date' => $data['date'] ?? $transaction->date,
+                    'total_amount' => $data['total_amount'] ?? $transaction->total_amount,
+                    'split_type' => $data['split_type'] ?? $transaction->split_type,
                     'paid_by_member_id' => $data['paid_by_member_id'] ?? $transaction->paid_by_member_id,
                 ]);
 
@@ -260,34 +263,34 @@ class TransactionController extends Controller
                     foreach ($data['splits'] as $split) {
                         TransactionSplit::create([
                             'transaction_id' => $transaction->id,
-                            'member_id'      => $split['member_id'],
-                            'amount'         => $split['amount'],
+                            'member_id' => $split['member_id'],
+                            'amount' => $split['amount'],
                         ]);
                     }
                 }
 
-                $balanceService->recalculate($trip);
+                // $balanceService->recalculate($trip);
             });
 
             return response()->json([
                 'status' => 'success',
-                'data'   => $transaction->load(['paidBy', 'splits.member']),
+                'data' => $transaction->load(['paidBy', 'splits.member']),
             ]);
 
         } catch (ValidationException $e) {
 
             return response()->json([
-                'status'  => 'error',
+                'status' => 'error',
                 'message' => 'Validation failed.',
-                'errors'  => $e->errors(),
+                'errors' => $e->errors(),
             ], 422);
 
         } catch (\Exception $e) {
 
             return response()->json([
-                'status'  => 'error',
+                'status' => 'error',
                 'message' => 'Internal server error.',
-                'detail'  => config('app.debug') ? $e->getMessage() : null,
+                'detail' => config('app.debug') ? $e->getMessage() : null,
             ], 500);
         }
     }
@@ -298,15 +301,14 @@ class TransactionController extends Controller
     public function destroy(
         Request $request,
         Trip $trip,
-        Transaction $transaction,
-        TripBalanceService $balanceService
+        Transaction $transaction
     ) {
         try {
             $user = $request->user();
 
             if ($transaction->trip_id !== $trip->id) {
                 return response()->json([
-                    'status'  => 'error',
+                    'status' => 'error',
                     'message' => 'Transaction does not belong to this trip',
                 ], 404);
             }
@@ -314,34 +316,34 @@ class TransactionController extends Controller
             $member = $trip->members()->where('user_id', $user->id)->first();
             if (!$member) {
                 return response()->json([
-                    'status'  => 'error',
+                    'status' => 'error',
                     'message' => 'Forbidden',
                 ], 403);
             }
 
-            DB::transaction(function () use ($trip, $transaction, $balanceService) {
+            DB::transaction(function () use ($trip, $transaction) {
                 $transaction->splits()->delete();
                 $transaction->delete();
 
-                $balanceService->recalculate($trip);
+                // $balanceService->recalculate($trip);
             });
 
             return response()->json([
-                'status'  => 'success',
+                'status' => 'success',
                 'message' => 'Transaction deleted',
             ]);
 
         } catch (\Exception $e) {
 
             return response()->json([
-                'status'  => 'error',
+                'status' => 'error',
                 'message' => 'Internal server error.',
-                'detail'  => config('app.debug') ? $e->getMessage() : null,
+                'detail' => config('app.debug') ? $e->getMessage() : null,
             ], 500);
         }
     }
 
-        /**
+    /**
      * Smart Add - kirim gambar + konteks trip ke n8n (OCR + LLM).
      * Endpoint: POST /api/trips/{trip}/transactions/prepare-ai
      */
@@ -354,14 +356,14 @@ class TransactionController extends Controller
             $member = $trip->members()->where('user_id', $user->id)->first();
             if (!$member) {
                 return response()->json([
-                    'status'  => 'error',
+                    'status' => 'error',
                     'message' => 'Forbidden',
                 ], 403);
             }
 
             // Validasi input
             $data = $request->validate([
-                'note'  => 'nullable|string',
+                'note' => 'nullable|string',
                 'image' => 'required|image|max:5120', // max 5MB
             ]);
 
@@ -369,7 +371,7 @@ class TransactionController extends Controller
             $webhookUrl = config('services.n8n.smart_add_url', env('N8N_SMART_ADD_URL'));
             if (!$webhookUrl) {
                 return response()->json([
-                    'status'  => 'error',
+                    'status' => 'error',
                     'message' => 'Smart Add service is not configured (N8N_SMART_ADD_URL).',
                 ], 500);
             }
@@ -384,32 +386,32 @@ class TransactionController extends Controller
             // Kirim juga konteks trip + daftar member ke n8n
             $members = $trip->members()->with('user')->get()->map(function ($m) {
                 return [
-                    'id'   => $m->id,
+                    'id' => $m->id,
                     'name' => $m->user?->name ?? $m->guest_name,
                     'type' => $m->user_id ? 'user' : 'guest',
                 ];
             })->values()->all();
 
             $payload = [
-                'draft_id'               => $draftId,
+                'draft_id' => $draftId,
                 'trip' => [
-                    'id'            => $trip->id,
-                    'name'          => $trip->name,
+                    'id' => $trip->id,
+                    'name' => $trip->name,
                     'currency_code' => $trip->currency_code,
                 ],
                 'requested_by_member_id' => $member->id,
-                'note'                   => $data['note'] ?? null,
-                'image_base64'           => $imageBase64,
-                'members'                => $members,
+                'note' => $data['note'] ?? null,
+                'image_base64' => $imageBase64,
+                'members' => $members,
             ];
 
             $response = Http::timeout(60)->post($webhookUrl, $payload);
 
             if ($response->failed()) {
                 return response()->json([
-                    'status'  => 'error',
+                    'status' => 'error',
                     'message' => 'Failed to call Smart Add service.',
-                    'detail'  => config('app.debug') ? $response->body() : null,
+                    'detail' => config('app.debug') ? $response->body() : null,
                 ], 502);
             }
 
@@ -421,41 +423,40 @@ class TransactionController extends Controller
             } else {
                 $aiData = [
                     'draft_id' => $draftId,
-                    'raw'      => $aiData,
+                    'raw' => $aiData,
                 ];
             }
 
             return response()->json([
                 'status' => 'success',
-                'data'   => $aiData,
+                'data' => $aiData,
             ]);
 
         } catch (ValidationException $e) {
 
             return response()->json([
-                'status'  => 'error',
+                'status' => 'error',
                 'message' => 'Validation failed.',
-                'errors'  => $e->errors(),
+                'errors' => $e->errors(),
             ], 422);
 
         } catch (\Exception $e) {
 
             return response()->json([
-                'status'  => 'error',
+                'status' => 'error',
                 'message' => 'Internal server error.',
-                'detail'  => config('app.debug') ? $e->getMessage() : null,
+                'detail' => config('app.debug') ? $e->getMessage() : null,
             ], 500);
         }
     }
 
-        /**
+    /**
      * Smart Add - simpan transaksi dari hasil AI + mapping user.
      * Endpoint: POST /api/trips/{trip}/transactions/save-ai
      */
     public function saveAi(
         Request $request,
         Trip $trip,
-        TripBalanceService $balanceService
     ) {
         try {
             $user = $request->user();
@@ -464,27 +465,28 @@ class TransactionController extends Controller
             $creatorMember = $trip->members()->where('user_id', $user->id)->first();
             if (!$creatorMember) {
                 return response()->json([
-                    'status'  => 'error',
+                    'status' => 'error',
                     'message' => 'Forbidden',
                 ], 403);
             }
 
             $data = $request->validate([
-                'draft_id'           => 'required|string',
-                'title'              => 'required|string|max:255',
-                'description'        => 'nullable|string',
-                'date'               => 'required|date',
-                'paid_by_member_id'  => 'required|integer',
-                'items'              => 'required|array|min:1',
+                'draft_id' => 'required|string',
+                'title' => 'required|string|max:255',
+                'description' => 'nullable|string',
+                'emoji' => 'nullable|string',
+                'date' => 'required|date',
+                'paid_by_member_id' => 'required|integer',
+                'items' => 'required|array|min:1',
 
-                'items.*.name'                => 'required|string',
-                'items.*.total'               => 'required|numeric|min:0',
+                'items.*.name' => 'required|string',
+                'items.*.total' => 'required|numeric|min:0',
                 'items.*.assigned_member_ids' => 'required|array|min:1',
                 'items.*.assigned_member_ids.*' => 'required|integer',
 
-                'tax'              => 'nullable|numeric|min:0',
-                'service_charge'   => 'nullable|numeric|min:0',
-                'tax_split_mode'   => 'nullable|in:proportional,equal',
+                'tax' => 'nullable|numeric|min:0',
+                'service_charge' => 'nullable|numeric|min:0',
+                'tax_split_mode' => 'nullable|in:proportional,equal',
             ]);
 
             // Pastikan semua member_id yang dipakai bener-bener milik trip ini
@@ -492,7 +494,7 @@ class TransactionController extends Controller
 
             if (!in_array($data['paid_by_member_id'], $tripMemberIds, true)) {
                 return response()->json([
-                    'status'  => 'error',
+                    'status' => 'error',
                     'message' => 'Payer is not a member of this trip.',
                 ], 422);
             }
@@ -501,16 +503,16 @@ class TransactionController extends Controller
                 foreach ($item['assigned_member_ids'] as $mid) {
                     if (!in_array($mid, $tripMemberIds, true)) {
                         return response()->json([
-                            'status'  => 'error',
+                            'status' => 'error',
                             'message' => 'One or more assigned members do not belong to this trip.',
                         ], 422);
                     }
                 }
             }
 
-            $tax            = $data['tax']            ?? 0;
-            $serviceCharge  = $data['service_charge'] ?? 0;
-            $taxSplitMode   = $data['tax_split_mode'] ?? 'proportional';
+            $tax = $data['tax'] ?? 0;
+            $serviceCharge = $data['service_charge'] ?? 0;
+            $taxSplitMode = $data['tax_split_mode'] ?? 'proportional';
 
             // Cek apakah draft_id sudah pernah disimpan → idempotent
             $existing = Transaction::where('trip_id', $trip->id)
@@ -520,7 +522,7 @@ class TransactionController extends Controller
             if ($existing) {
                 return response()->json([
                     'status' => 'success',
-                    'data'   => $existing->load(['paidBy', 'splits.member']),
+                    'data' => $existing->load(['paidBy', 'splits.member']),
                     'message' => 'Transaction already saved for this draft_id.',
                 ], 200);
             }
@@ -530,7 +532,7 @@ class TransactionController extends Controller
 
             foreach ($data['items'] as $item) {
                 $totalItem = (float) $item['total'];
-                $assigned  = $item['assigned_member_ids'];
+                $assigned = $item['assigned_member_ids'];
                 $countAssigned = count($assigned);
 
                 if ($countAssigned < 1 || $totalItem <= 0) {
@@ -580,37 +582,28 @@ class TransactionController extends Controller
 
             if ($totalAmount <= 0) {
                 return response()->json([
-                    'status'  => 'error',
+                    'status' => 'error',
                     'message' => 'Computed total amount must be greater than zero.',
                 ], 422);
             }
 
-            $transaction = DB::transaction(function () use (
-                $trip,
-                $creatorMember,
-                $data,
-                $memberTotals,
-                $totalAmount,
-                $tax,
-                $serviceCharge,
-                $taxSplitMode,
-                $balanceService
-            ) {
+            $transaction = DB::transaction(function () use ($trip, $creatorMember, $data, $memberTotals, $totalAmount, $tax, $serviceCharge, $taxSplitMode, ) {
                 $tx = Transaction::create([
-                    'trip_id'              => $trip->id,
+                    'trip_id' => $trip->id,
                     'created_by_member_id' => $creatorMember->id,
-                    'paid_by_member_id'    => $data['paid_by_member_id'],
-                    'title'                => $data['title'],
-                    'description'          => $data['description'] ?? null,
-                    'date'                 => $data['date'],
-                    'total_amount'         => $totalAmount,
-                    'split_type'           => 'itemized_ai',
-                    'meta'                 => [
-                        'draft_id'        => $data['draft_id'],
-                        'tax'             => $tax,
-                        'service_charge'  => $serviceCharge,
-                        'tax_split_mode'  => $taxSplitMode,
-                    ],
+                    'paid_by_member_id' => $data['paid_by_member_id'],
+                    'title' => $data['title'],
+                    'description' => $data['description'] ?? null,
+                    'emoji' => $data['emoji'] ?? null,
+                    'date' => $data['date'],
+                    'total_amount' => $totalAmount,
+                    'split_type' => 'itemized_ai',
+                    'meta' => [
+                            'draft_id' => $data['draft_id'],
+                            'tax' => $tax,
+                            'service_charge' => $serviceCharge,
+                            'tax_split_mode' => $taxSplitMode,
+                        ],
                 ]);
 
                 foreach ($memberTotals as $mid => $amount) {
@@ -620,36 +613,36 @@ class TransactionController extends Controller
 
                     TransactionSplit::create([
                         'transaction_id' => $tx->id,
-                        'member_id'      => $mid,
-                        'amount'         => $amount,
+                        'member_id' => $mid,
+                        'amount' => $amount,
                     ]);
                 }
 
                 // Recalculate balances
-                $balanceService->recalculate($trip);
+                // $balanceService->recalculate($trip);
 
                 return $tx;
             });
 
             return response()->json([
                 'status' => 'success',
-                'data'   => $transaction->load(['paidBy', 'splits.member']),
+                'data' => $transaction->load(['paidBy', 'splits.member']),
             ], 201);
 
         } catch (ValidationException $e) {
 
             return response()->json([
-                'status'  => 'error',
+                'status' => 'error',
                 'message' => 'Validation failed.',
-                'errors'  => $e->errors(),
+                'errors' => $e->errors(),
             ], 422);
 
         } catch (\Exception $e) {
 
             return response()->json([
-                'status'  => 'error',
+                'status' => 'error',
                 'message' => 'Internal server error.',
-                'detail'  => config('app.debug') ? $e->getMessage() : null,
+                'detail' => config('app.debug') ? $e->getMessage() : null,
             ], 500);
         }
     }

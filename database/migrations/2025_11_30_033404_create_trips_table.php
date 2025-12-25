@@ -16,6 +16,9 @@ return new class extends Migration
                   ->cascadeOnDelete();
 
             $table->string('name');
+            
+            $table->string('emoji')->default('✈️'); // Default emoji jika user tidak pilih
+            $table->string('cover_url')->nullable(); // URL gambar (dari Unsplash/Upload)
             $table->text('description')->nullable();
 
             $table->string('currency_code', 3)->default('IDR');

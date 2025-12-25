@@ -21,7 +21,6 @@ Route::middleware('auth:sanctum')->group(function () {
     
     // User
     Route::get('/users', [UserController::class, 'index']);
-    
 
     // Trips
     Route::get('/trips', [TripController::class, 'index']);
@@ -31,6 +30,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/trips/{trip}', [TripController::class, 'destroy']);
     Route::get('/trips/{trip}/my-balances', [TripController::class, 'myBalances']);
     Route::get('/trips/{trip}/summary', [TripController::class, 'summary']);
+    Route::post('/trips/{trip}/share', [TripController::class, 'share']);
 
     // Trip members
     Route::get('/trips/{trip}/members', [TripMemberController::class, 'index']);

@@ -32,6 +32,7 @@ class TripController extends Controller
                 $q->where('user_id', $user->id);
             })
                 ->withCount('members')
+                // ->withSum('transactions', 'amount')
                 ->orderByDesc('created_at')
                 ->paginate($perPage);
 
@@ -338,67 +339,93 @@ class TripController extends Controller
         ]);
     }
 
+    /**
+     * Generate/Get Shareable Link
+     * POST /api/trips/{trip}/share
+     */
+    public function share(Request $request, Trip $trip)
+    {
+        // Cek akses user
+        if (!$trip->members()->where('user_id', $request->user()->id)->exists()) {
+            return response()->json(['status' => 'error', 'message' => 'Forbidden'], 403);
+        }
+
+        // Jika belum punya token, bikin baru
+        if (!$trip->public_summary_token) {
+            $trip->public_summary_token = Str::random(32);
+            $trip->save();
+        }
+
+        // Return URL lengkap
+        // Pastikan APP_URL di .env kamu sudah benar (misal: http://triva.app atau IP local)
+        $url = config('app.url') . "/public/trips/" . $trip->public_summary_token;
+
+        return response()->json([
+            'status' => 'success',
+            'data' => [
+                'url' => $url,
+                'token' => $trip->public_summary_token
+            ]
+        ]);
+    }
+
+    /**
+     * PUBLIC ACCESS (No Login Required)
+     * GET /api/public/trips/{token}
+     */
     public function publicSummary(string $token)
     {
         $trip = Trip::where('public_summary_token', $token)->firstOrFail();
 
-        // Ambil data format baru (List of Rows)
+        // 1. Panggil Logic 'Otak' yang SAMA dengan Summary biasa
         $allDebts = (new TripBalanceService())->calculateTripBalances($trip->id);
 
-        // Kita hitung manual balance per member dari list tersebut
-        $memberBalances = [];
+        $tripMembers = TripMember::with('user')->where('trip_id', $trip->id)->get();
+        $memberMap = $tripMembers->keyBy('id');
 
-        // Inisialisasi 0 untuk semua member
-        foreach ($trip->members as $m) {
-            $memberBalances[$m->user_id ?? $m->id] = 0; // Gunakan user_id atau member id sebagai key sementara
-        }
+        // 2. Hitung Overview (Net Balance)
+        $netBalances = [];
+        foreach ($tripMembers as $m)
+            $netBalances[$m->id] = 0;
 
         foreach ($allDebts as $debt) {
-            // Mapping ID dari service (member_id) ke logic kita
-            $fromMid = $debt['from_member_id'];
-            $toMid = $debt['to_member_id'];
-            $remain = $debt['remaining_amount'];
-
-            // Si A hutang (Minus)
-            // Kita perlu mapping member_id ke user_id (karena FE public mungkin butuh user_id/nama)
-            // Tapi agar aman, kita hitung based on member_id dulu
+            $netBalances[$debt['from_member_id']] -= $debt['remaining_amount'];
+            $netBalances[$debt['to_member_id']] += $debt['remaining_amount'];
         }
 
-        // --- VERSI SIMPEL YANG LEBIH AMAN ---
-        // Mapping ulang member agar mudah diakses
-        $membersMap = $trip->members->keyBy('id');
+        $overview = [];
+        foreach ($netBalances as $mid => $amount) {
+            if (abs($amount) < 1)
+                continue;
+            $m = $memberMap[$mid];
+            $overview[] = [
+                'name' => $m->user ? $m->user->name : $m->guest_name,
+                'amount' => $amount,
+                // Di public view, tidak ada 'is_current_user' karena viewer anonim
+            ];
+        }
 
-        $finalMembersData = $trip->members->map(function ($m) use ($allDebts) {
-            $balance = 0;
-
-            // Loop hasil service
-            foreach ($allDebts as $debt) {
-                // Jika saya yang berhutang (remaining), balance saya berkurang
-                if ($debt['from_member_id'] == $m->id) {
-                    $balance -= $debt['remaining_amount'];
-                }
-                // Jika orang hutang ke saya (remaining), balance saya bertambah
-                if ($debt['to_member_id'] == $m->id) {
-                    $balance += $debt['remaining_amount'];
-                }
-            }
+        // 3. Format Settlement Plan
+        $settlementPlan = collect($allDebts)->map(function ($d) use ($memberMap) {
+            $from = $memberMap[$d['from_member_id']];
+            $to = $memberMap[$d['to_member_id']];
 
             return [
-                'user_id' => $m->user_id, // Tetap kirim user_id jika ada
-                'name' => $m->user?->name ?? $m->guest_name,
-                'balance' => $balance,
+                'from_name' => $from->user ? $from->user->name : $from->guest_name,
+                'to_name' => $to->user ? $to->user->name : $to->guest_name,
+                'amount' => $d['remaining_amount'],
+                'status' => $d['status']
             ];
         });
 
         return response()->json([
             'status' => 'success',
             'data' => [
-                'trip' => [
-                    'name' => $trip->name,
-                    'currency_code' => $trip->currency_code,
-                ],
-                'members' => $finalMembersData,
-            ],
+                'trip_name' => $trip->name,
+                'currency' => $trip->currency_code,
+                'overview' => array_values($overview),
+                'settlements' => $settlementPlan
+            ]
         ]);
     }
 

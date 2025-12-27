@@ -27,6 +27,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/trips', [TripController::class, 'store']);
     Route::get('/trips/{trip}', [TripController::class, 'show']);
     Route::patch('/trips/{trip}', [TripController::class, 'update']);
+    Route::post('/trips/{trip}/cover', [TripController::class, 'updateCover']);
     Route::delete('/trips/{trip}', [TripController::class, 'destroy']);
     Route::get('/trips/{trip}/my-balances', [TripController::class, 'myBalances']);
     Route::get('/trips/{trip}/summary', [TripController::class, 'summary']);

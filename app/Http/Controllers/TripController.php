@@ -32,7 +32,7 @@ class TripController extends Controller
                 $q->where('user_id', $user->id);
             })
                 ->withCount('members')
-                // ->withSum('transactions', 'amount')
+                ->withSum('transactions as total_spent', 'total_amount')
                 ->orderByDesc('created_at')
                 ->paginate($perPage);
 
@@ -107,6 +107,49 @@ class TripController extends Controller
                 'status' => 'error',
                 'message' => 'Internal server error',
                 'detail' => config('app.debug') ? $e->getMessage() : null,
+            ], 500);
+        }
+    }
+
+    public function updateCover(Request $request, Trip $trip)
+    {
+        try {
+            $user = $request->user();
+
+            if ($trip->owner_id !== $user->id) {
+                return response()->json(['status' => 'error', 'message' => 'Unauthorized'], 403);
+            }
+
+            $request->validate([
+                'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048', // Max 2MB
+            ]);
+
+            if ($request->hasFile('image')) {
+                if ($trip->cover_url) {
+                    // Logic hapus file lama bisa ditambahkan di sini jika perlu
+                    // Parsing path dari URL lama agak tricky, jadi skip dulu untuk sekarang aman.
+                }
+
+                $path = $request->file('image')->store('trip-covers', 'public');
+
+                $url = asset('storage/' . $path);
+
+                $trip->update(['cover_url' => $url]);
+
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'Cover updated successfully',
+                    'data' => ['cover_url' => $url]
+                ]);
+            }
+
+            return response()->json(['status' => 'error', 'message' => 'No image uploaded'], 400);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to update cover',
+                'detail' => config('app.debug') ? $e->getMessage() : null
             ], 500);
         }
     }

@@ -8,6 +8,7 @@ use App\Models\TripMember;
 use App\Models\User;
 use App\Services\TripBalanceService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class TripController extends Controller
@@ -62,16 +63,27 @@ class TripController extends Controller
             $data = $request->validate([
                 'name' => 'required|string|max:255',
                 'description' => 'nullable|string',
-                'cover_url' => 'nullable|url',
+                'cover_url' => 'nullable|string',
+                'cover_image' => 'nullable|image|max:5120',
                 'currency_code' => 'nullable|string|size:3',
                 'start_date' => 'nullable|date',
                 'end_date' => 'nullable|date',
+                'emoji' => 'nullable|string',
             ]);
+
+            $finalCoverUrl = null;
+
+            if ($request->hasFile('cover_image')) {
+                $path = $request->file('cover_image')->store('trip_covers', 'public');
+                $finalCoverUrl = asset('storage/' . $path);
+            } elseif ($request->filled('cover_url')) {
+                $finalCoverUrl = $request->cover_url;
+            }
 
             $trip = Trip::create([
                 'owner_id' => $user->id,
                 'name' => $data['name'],
-                'cover_url' => $data['cover_url'] ?? null,
+                'cover_url' => $finalCoverUrl,
                 'emoji' => $data['emoji'] ?? '✈️',
                 'description' => $data['description'] ?? null,
                 'currency_code' => $data['currency_code'] ?? 'IDR',
@@ -90,11 +102,11 @@ class TripController extends Controller
 
             return response()->json([
                 'status' => 'success',
+                'message' => 'Trip created successfully',
                 'data' => $trip,
             ], 201);
 
         } catch (\Illuminate\Validation\ValidationException $e) {
-
             return response()->json([
                 'status' => 'error',
                 'message' => 'Validation failed',
@@ -102,7 +114,6 @@ class TripController extends Controller
             ], 422);
 
         } catch (\Exception $e) {
-
             return response()->json([
                 'status' => 'error',
                 'message' => 'Internal server error',
@@ -111,27 +122,68 @@ class TripController extends Controller
         }
     }
 
+    public function update(Request $request, Trip $trip)
+    {
+        try {
+            $user = $request->user();
+
+            $isMember = $trip->members()->where('user_id', $user->id)->exists();
+
+            if (!$isMember) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Unauthorized. Only members can edit this trip.'
+                ], 403);
+            }
+
+            // Validasi (Hanya text data)
+            $data = $request->validate([
+                'name' => 'sometimes|required|string|max:255',
+                'description' => 'nullable|string',
+                'start_date' => 'nullable|date',
+                'end_date' => 'nullable|date',
+                'currency_code' => 'nullable|string|size:3',
+                'emoji' => 'nullable|string',
+                'status' => 'nullable|in:planning,ongoing,finished,cancelled',
+            ]);
+
+            // Update data
+            $trip->update($data);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Trip updated successfully',
+                'data' => $trip,
+            ]);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json(['status' => 'error', 'message' => 'Validation failed', 'errors' => $e->errors()], 422);
+        } catch (\Exception $e) {
+            return response()->json(['status' => 'error', 'message' => 'Internal server error', 'detail' => $e->getMessage()], 500);
+        }
+    }
+
     public function updateCover(Request $request, Trip $trip)
     {
         try {
             $user = $request->user();
 
-            if ($trip->owner_id !== $user->id) {
+            $isMember = $trip->members()->where('user_id', $user->id)->exists();
+
+            if (!$isMember) {
                 return response()->json(['status' => 'error', 'message' => 'Unauthorized'], 403);
             }
 
             $request->validate([
-                'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048', // Max 2MB
+                'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:5120', // Max 5MB
             ]);
 
             if ($request->hasFile('image')) {
-                if ($trip->cover_url) {
-                    // Logic hapus file lama bisa ditambahkan di sini jika perlu
-                    // Parsing path dari URL lama agak tricky, jadi skip dulu untuk sekarang aman.
+                if ($trip->cover_url && Str::contains($trip->cover_url, 'storage')) {
+                    Storage::disk('public')->delete(str_replace(asset('storage/'), '', $trip->cover_url));
                 }
 
-                $path = $request->file('image')->store('trip-covers', 'public');
-
+                $path = $request->file('image')->store('trip_covers', 'public');
                 $url = asset('storage/' . $path);
 
                 $trip->update(['cover_url' => $url]);
@@ -146,11 +198,7 @@ class TripController extends Controller
             return response()->json(['status' => 'error', 'message' => 'No image uploaded'], 400);
 
         } catch (\Exception $e) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Failed to update cover',
-                'detail' => config('app.debug') ? $e->getMessage() : null
-            ], 500);
+            return response()->json(['status' => 'error', 'message' => 'Failed to update cover', 'detail' => $e->getMessage()], 500);
         }
     }
 
@@ -182,57 +230,6 @@ class TripController extends Controller
 
         } catch (\Exception $e) {
             return response()->json(['status' => 'error', 'message' => 'Internal server error'], 500);
-        }
-    }
-
-    /**
-     * Update trip (hanya owner).
-     */
-    public function update(Request $request, Trip $trip)
-    {
-        try {
-            $user = $request->user();
-
-            if ($trip->owner_id !== $user->id) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'Only owner can update this trip',
-                ], 403);
-            }
-
-            $data = $request->validate([
-                'name' => 'sometimes|required|string|max:255',
-                'cover_url' => 'nullable|url',
-                'description' => 'nullable|string',
-                'currency_code' => 'nullable|string|size:3',
-                'start_date' => 'nullable|date',
-                'end_date' => 'nullable|date',
-                'status' => 'nullable|in:planning,ongoing,finished,cancelled',
-            ]);
-
-            $trip->fill($data);
-            $trip->save();
-
-            return response()->json([
-                'status' => 'success',
-                'data' => $trip,
-            ]);
-
-        } catch (\Illuminate\Validation\ValidationException $e) {
-
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Validation failed',
-                'errors' => $e->errors(),
-            ], 422);
-
-        } catch (\Exception $e) {
-
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Internal server error',
-                'detail' => config('app.debug') ? $e->getMessage() : null,
-            ], 500);
         }
     }
 
@@ -376,9 +373,9 @@ class TripController extends Controller
         return response()->json([
             'status' => 'success',
             'data' => [
-                'overview' => array_values($overview),
-                'settlements' => $settlementPlan
-            ]
+                    'overview' => array_values($overview),
+                    'settlements' => $settlementPlan
+                ]
         ]);
     }
 
@@ -406,9 +403,9 @@ class TripController extends Controller
         return response()->json([
             'status' => 'success',
             'data' => [
-                'url' => $url,
-                'token' => $trip->public_summary_token
-            ]
+                    'url' => $url,
+                    'token' => $trip->public_summary_token
+                ]
         ]);
     }
 
@@ -464,11 +461,11 @@ class TripController extends Controller
         return response()->json([
             'status' => 'success',
             'data' => [
-                'trip_name' => $trip->name,
-                'currency' => $trip->currency_code,
-                'overview' => array_values($overview),
-                'settlements' => $settlementPlan
-            ]
+                    'trip_name' => $trip->name,
+                    'currency' => $trip->currency_code,
+                    'overview' => array_values($overview),
+                    'settlements' => $settlementPlan
+                ]
         ]);
     }
 

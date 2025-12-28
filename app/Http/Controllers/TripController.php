@@ -324,7 +324,7 @@ class TripController extends Controller
     public function summary(Request $request, $tripId)
     {
         $allDebts = (new TripBalanceService())->calculateTripBalances($tripId);
-
+        $trip = Trip::findOrFail($tripId);
         $tripMembers = TripMember::with('user')->where('trip_id', $tripId)->get();
         $memberMap = $tripMembers->keyBy('id');
 
@@ -370,9 +370,17 @@ class TripController extends Controller
             ];
         })->values();
 
+        $totalSpent = $trip->transactions()->sum('total_amount');
+
         return response()->json([
             'status' => 'success',
             'data' => [
+                'trip_name' => $trip->name,
+                'currency' => $trip->currency_code,
+
+                // 👇 KEY BARU INI PENTING
+                'has_transactions' => $totalSpent > 0,
+
                 'overview' => array_values($overview),
                 'settlements' => $settlementPlan
             ]

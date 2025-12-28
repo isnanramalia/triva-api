@@ -179,19 +179,20 @@ class TripController extends Controller
             ]);
 
             if ($request->hasFile('image')) {
-                if ($trip->cover_url && Str::contains($trip->cover_url, 'storage')) {
-                    Storage::disk('public')->delete(str_replace(asset('storage/'), '', $trip->cover_url));
+                $oldPath = $trip->getRawOriginal('cover_url');
+
+                if ($oldPath && Storage::disk('public')->exists($oldPath)) {
+                    Storage::disk('public')->delete($oldPath);
                 }
 
                 $path = $request->file('image')->store('trip_covers', 'public');
-                $url = asset('storage/' . $path);
 
-                $trip->update(['cover_url' => $url]);
+                $trip->update(['cover_url' => $path]);
 
                 return response()->json([
                     'status' => 'success',
                     'message' => 'Cover updated successfully',
-                    'data' => ['cover_url' => $url]
+                    'data' => ['cover_url' => asset('storage/' . $path)]
                 ]);
             }
 
@@ -354,28 +355,27 @@ class TripController extends Controller
         }
 
         // 2. Settlement Plan (List Bawah)
-        // Tampilkan SEMUA (termasuk Paid)
         $settlementPlan = collect($allDebts)->map(function ($d) use ($memberMap) {
             $from = $memberMap[$d['from_member_id']];
             $to = $memberMap[$d['to_member_id']];
 
             return [
-                'from_member_id' => $d['from_member_id'],
+                'from_member_id' => $d['from_member_id'], // Pastikan ini ada
                 'from_name' => $from->user ? $from->user->name : $from->guest_name,
-                'to_member_id' => $d['to_member_id'],
+                'to_member_id' => $d['to_member_id'],     // Pastikan ini ada
                 'to_name' => $to->user ? $to->user->name : $to->guest_name,
-                'amount' => $d['remaining_amount'], // Sisa yang harus dibayar
-                'total_orig' => $d['total_amount'],     // Hutang asli
-                'status' => $d['status']            // 'paid', 'unpaid'
+                'amount' => $d['remaining_amount'],
+                'total_orig' => $d['total_amount'],
+                'status' => $d['status']
             ];
-        });
+        })->values();
 
         return response()->json([
             'status' => 'success',
             'data' => [
-                    'overview' => array_values($overview),
-                    'settlements' => $settlementPlan
-                ]
+                'overview' => array_values($overview),
+                'settlements' => $settlementPlan
+            ]
         ]);
     }
 
@@ -403,9 +403,9 @@ class TripController extends Controller
         return response()->json([
             'status' => 'success',
             'data' => [
-                    'url' => $url,
-                    'token' => $trip->public_summary_token
-                ]
+                'url' => $url,
+                'token' => $trip->public_summary_token
+            ]
         ]);
     }
 
@@ -461,11 +461,11 @@ class TripController extends Controller
         return response()->json([
             'status' => 'success',
             'data' => [
-                    'trip_name' => $trip->name,
-                    'currency' => $trip->currency_code,
-                    'overview' => array_values($overview),
-                    'settlements' => $settlementPlan
-                ]
+                'trip_name' => $trip->name,
+                'currency' => $trip->currency_code,
+                'overview' => array_values($overview),
+                'settlements' => $settlementPlan
+            ]
         ]);
     }
 

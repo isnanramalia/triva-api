@@ -54,21 +54,37 @@ class SettlementController extends Controller
     public function store(Request $request, Trip $trip)
     {
         try {
-            $user = $request->user();
-
-            $creator = $trip->members()->where('user_id', $user->id)->first();
-            if (!$creator) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'Forbidden'
-                ], 403);
-            }
-
             $data = $request->validate([
                 'from_member_id' => 'required|exists:trip_members,id',
-                'to_member_id' => 'required|exists:trip_members,id|different:from_member_id',
+                'to_member_id' => 'required|exists:trip_members,id',
                 'amount' => 'required|numeric|min:0.01',
             ]);
+
+            $user = $request->user();
+
+            // 1. Validasi: Apakah User adalah Member Trip ini?
+            if (!$trip->members()->where('user_id', $user->id)->exists()) {
+                return response()->json(['status' => 'error', 'message' => 'Forbidden'], 403);
+            }
+
+            // 2. Ambil Data Member Pengirim (Debtor)
+            $fromMember = TripMember::find($data['from_member_id']);
+
+            // 3. LOGIC ACCESS CONTROL (UPDATED) ✅
+            // Akses diberikan jika:
+            // - User adalah Trip Owner (Admin)
+            // - ATAU User adalah orang yang berhutang (Debtor)
+            // - ATAU User adalah orang yang dihutangi (Creditor) -> Opsional, biasanya Creditor yang confirm, tapi di sini kita pakai logic "Create Settlement"
+
+            $isTripOwner = $trip->owner_id === $user->id;
+            $isDebtor = $fromMember->user_id === $user->id; // Hati-hati, Guest user_id-nya null
+
+            if (!$isTripOwner && !$isDebtor) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Only the debtor or trip admin can mark this as paid.'
+                ], 403);
+            }
 
             // Validasi kedua member milik trip
             $memberIds = $trip->members()->pluck('id')->toArray();
@@ -88,7 +104,7 @@ class SettlementController extends Controller
                 'to_member_id' => $data['to_member_id'],
                 'amount' => $data['amount'],
                 'status' => 'confirmed',
-                'created_by_member_id' => $creator->id,
+                'created_by_member_id' => $user->tripMembers()->where('trip_id', $trip->id)->first()->id, // Record siapa yang klik
                 'confirmed_at' => now(),
             ]);
 

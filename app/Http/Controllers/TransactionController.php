@@ -343,6 +343,30 @@ class TransactionController extends Controller
         }
     }
 
+    public function show(Request $request, Trip $trip, Transaction $transaction)
+    {
+        try {
+            $user = $request->user();
+
+            if (!$trip->members()->where('user_id', $user->id)->exists()) {
+                return response()->json(['status' => 'error', 'message' => 'Forbidden'], 403);
+            }
+
+            $transaction->load([
+                'paidBy.user',
+                'splits.member.user',
+                'createdBy.user'
+            ]);
+
+            return response()->json([
+                'status' => 'success',
+                'data' => $transaction
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
+        }
+    }
+
     /**
      * Smart Add - kirim gambar + konteks trip ke n8n (OCR + LLM).
      * Endpoint: POST /api/trips/{trip}/transactions/prepare-ai
@@ -599,11 +623,11 @@ class TransactionController extends Controller
                     'total_amount' => $totalAmount,
                     'split_type' => 'itemized_ai',
                     'meta' => [
-                            'draft_id' => $data['draft_id'],
-                            'tax' => $tax,
-                            'service_charge' => $serviceCharge,
-                            'tax_split_mode' => $taxSplitMode,
-                        ],
+                        'draft_id' => $data['draft_id'],
+                        'tax' => $tax,
+                        'service_charge' => $serviceCharge,
+                        'tax_split_mode' => $taxSplitMode,
+                    ],
                 ]);
 
                 foreach ($memberTotals as $mid => $amount) {

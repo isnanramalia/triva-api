@@ -477,4 +477,43 @@ class TripController extends Controller
         ]);
     }
 
+    public function join(Request $request)
+    {
+        $request->validate([
+            'token' => 'required|string',
+        ]);
+
+        $trip = Trip::where('public_summary_token', $request->token)->first();
+
+        if (!$trip) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Trip tidak ditemukan atau link sudah tidak berlaku.'
+            ], 404);
+        }
+
+        $user = $request->user();
+
+        $alreadyJoined = $trip->members()->where('user_id', $user->id)->exists();
+
+        if ($alreadyJoined) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Kamu sudah bergabung dalam trip ini.'
+            ], 422);
+        }
+
+        $member = $trip->members()->create([
+            'user_id' => $user->id,
+            'role' => 'member',
+            'balance' => 0,
+        ]);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Berhasil bergabung ke trip ' . $trip->name,
+            'data' => $trip->loadCount('members')
+        ]);
+    }
+
 }

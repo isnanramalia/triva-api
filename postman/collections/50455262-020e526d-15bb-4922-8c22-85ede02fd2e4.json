@@ -2041,8 +2041,37 @@
 				"disableBodyPruning": true
 			},
 			"request": {
-				"method": "GET",
-				"header": []
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "data",
+							"type": "file",
+							"uuid": "b8b9f0d1-ac77-43ba-be83-de751f6d0c57",
+							"src": "/C:/Users/isnanramalia/Downloads/Sabfbdd7967414a14886cdf434bb550e7j.jpg"
+						},
+						{
+							"key": "query",
+							"value": "",
+							"type": "text",
+							"uuid": "ae9e913f-46f9-44f7-b1af-07f56cf476a3"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://localhost:5678/webhook-test/scan-receipt",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5678",
+					"path": [
+						"webhook-test",
+						"scan-receipt"
+					]
+				}
 			},
 			"response": []
 		}

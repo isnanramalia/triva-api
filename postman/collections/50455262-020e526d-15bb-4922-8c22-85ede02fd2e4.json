@@ -2050,11 +2050,12 @@
 							"key": "data",
 							"type": "file",
 							"uuid": "b8b9f0d1-ac77-43ba-be83-de751f6d0c57",
-							"src": "/C:/Users/isnanramalia/Downloads/Sabfbdd7967414a14886cdf434bb550e7j.jpg"
+							"src": "/C:/Users/isnanramalia/Downloads/Sabfbdd7967414a14886cdf434bb550e7j.jpg",
+							"disabled": true
 						},
 						{
 							"key": "query",
-							"value": "",
+							"value": "Bayar parkir 10.000, terus makan bakso 25.000 punya Isna sendiri",
 							"type": "text",
 							"uuid": "ae9e913f-46f9-44f7-b1af-07f56cf476a3"
 						}

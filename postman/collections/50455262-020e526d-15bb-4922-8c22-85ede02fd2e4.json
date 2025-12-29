@@ -2033,6 +2033,18 @@
 				}
 			],
 			"id": "50455262-e16375c1-8ff1-4c92-84c3-98316254b24e"
+		},
+		{
+			"name": "New Request",
+			"id": "50455262-246f8ca1-d72c-4bb7-b009-5dad3988d6f2",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
 		}
 	],
 	"auth": {

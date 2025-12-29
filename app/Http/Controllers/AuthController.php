@@ -14,7 +14,7 @@ class AuthController extends Controller
         try {
 
             $credentials = $request->validate([
-                'email'    => 'required|email',
+                'email' => 'required|email',
                 'password' => 'required',
             ]);
 
@@ -34,7 +34,7 @@ class AuthController extends Controller
                 'status' => 'success',
                 'data' => [
                     'token' => $token,
-                    'user'  => $user
+                    'user' => $user
                 ]
             ], 200);
 
@@ -61,13 +61,13 @@ class AuthController extends Controller
         try {
 
             $data = $request->validate([
-                'name'     => 'required|string|max:255',
-                'email'    => 'required|email|unique:users,email',
+                'name' => 'required|string|max:255',
+                'email' => 'required|email|unique:users,email',
                 'password' => 'required|string|min:6',
             ]);
 
             $user = User::create([
-                'name'  => $data['name'],
+                'name' => $data['name'],
                 'email' => $data['email'],
                 'password' => Hash::make($data['password']),
             ]);
@@ -78,8 +78,8 @@ class AuthController extends Controller
             return response()->json([
                 'status' => 'success',
                 'message' => 'User registered successfully.',
-                'user'    => $user,
-                'token'   => $token,
+                'user' => $user,
+                'token' => $token,
             ], 201);
 
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -100,6 +100,37 @@ class AuthController extends Controller
         }
     }
 
+    public function me(Request $request)
+    {
+        return response()->json([
+            'status' => 'success',
+            'data' => $request->user()
+        ]);
+    }
+
+    public function update(Request $request)
+    {
+        try {
+            $user = $request->user();
+
+            $data = $request->validate([
+                'name' => 'required|string|max:255',
+                'email' => 'required|email|unique:users,email,' . $user->id,
+            ]);
+
+            $user->update($data);
+
+            return response()->json([
+                'status' => 'success',
+                'data' => $user
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Gagal memperbarui profil'
+            ], 500);
+        }
+    }
 
     public function logout(Request $request)
     {

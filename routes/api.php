@@ -17,6 +17,7 @@ Route::get('/public/trips/{token}', [TripController::class, 'publicSummary']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', [AuthController::class, 'me']);
+    Route::patch('/me', [AuthController::class, 'update']);
     Route::post('/logout', [AuthController::class, 'logout']);
     
     // User

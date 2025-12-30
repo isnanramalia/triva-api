@@ -2033,6 +2033,48 @@
 				}
 			],
 			"id": "50455262-e16375c1-8ff1-4c92-84c3-98316254b24e"
+		},
+		{
+			"name": "New Request",
+			"id": "50455262-246f8ca1-d72c-4bb7-b009-5dad3988d6f2",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "data",
+							"type": "file",
+							"uuid": "b8b9f0d1-ac77-43ba-be83-de751f6d0c57",
+							"src": "/C:/Users/isnanramalia/Downloads/Sabfbdd7967414a14886cdf434bb550e7j.jpg",
+							"disabled": true
+						},
+						{
+							"key": "query",
+							"value": "Bayar parkir 10.000, terus makan bakso 25.000 punya Isna sendiri",
+							"type": "text",
+							"uuid": "ae9e913f-46f9-44f7-b1af-07f56cf476a3"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://localhost:5678/webhook-test/scan-receipt",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5678",
+					"path": [
+						"webhook-test",
+						"scan-receipt"
+					]
+				}
+			},
+			"response": []
 		}
 	],
 	"auth": {

@@ -368,108 +368,110 @@ class TransactionController extends Controller
     }
 
     /**
-     * Smart Add - kirim gambar + konteks trip ke n8n (OCR + LLM).
-     * Endpoint: POST /api/trips/{trip}/transactions/prepare-ai
+     * Kirim Gambar + Data Member ke n8n
      */
-    public function prepareAi(Request $request, Trip $trip)
+    // Tambahkan method ini di TransactionController.php atau TripController.php (sesuai route api 'prepare-ai')
+
+    public function prepareAi(Request $request, $tripId = null) // Ubah jadi $tripId = null biar fleksibel
     {
         try {
+            // 1. CARI TRIP ID (Prioritas: URL Route -> Body Request)
+            $id = $tripId;
+
+            // Kalau dari URL null (karena binding gagal), cek body request
+            if (!$id) {
+                $id = $request->input('trip_id');
+            }
+
+            // Kalau masih gak ketemu, error
+            if (!$id) {
+                return response()->json(['status' => 'error', 'message' => 'Trip ID not found in URL or Body'], 400);
+            }
+
+            // 2. LOAD MODEL TRIP SECARA MANUAL (Lebih Aman)
+            $trip = Trip::with('members.user')->find($id);
+
+            if (!$trip) {
+                return response()->json(['status' => 'error', 'message' => 'Trip not found'], 404);
+            }
+
+            // 3. CEK MEMBER (Security)
             $user = $request->user();
-
-            // Pastikan user adalah member trip
-            $member = $trip->members()->where('user_id', $user->id)->first();
-            if (!$member) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'Forbidden',
-                ], 403);
+            if (!$trip->members()->where('user_id', $user->id)->exists()) {
+                return response()->json(['status' => 'error', 'message' => 'Forbidden'], 403);
             }
 
-            // Validasi input
-            $data = $request->validate([
-                'note' => 'nullable|string',
-                'image' => 'required|image|max:5120', // max 5MB
-            ]);
+            // --- SISANYA SAMA SEPERTI SEBELUMNYA ---
 
-            // Ambil URL webhook n8n dari config/env
-            $webhookUrl = config('services.n8n.smart_add_url', env('N8N_SMART_ADD_URL'));
-            if (!$webhookUrl) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'Smart Add service is not configured (N8N_SMART_ADD_URL).',
-                ], 500);
+            // 4. Proses Gambar (Upload ke Storage Public)
+            $imageUrl = null;
+            if ($request->hasFile('image')) {
+                // Simpan dan generate URL yang bisa diakses n8n
+                $path = $request->file('image')->store('ai_uploads', 'public');
+
+                // PENTING: Gunakan asset() agar generate http://localhost.../storage/...
+                // Pastikan kamu sudah run: php artisan storage:link
+                $imageUrl = asset('storage/' . $path);
             }
 
-            // Encode gambar ke base64 untuk dikirim ke n8n
-            $file = $request->file('image');
-            $imageBase64 = base64_encode(file_get_contents($file->getRealPath()));
-
-            // draft_id untuk trace AI request (bisa dipakai di save-ai)
-            $draftId = 'ai-' . uniqid('', true);
-
-            // Kirim juga konteks trip + daftar member ke n8n
-            $members = $trip->members()->with('user')->get()->map(function ($m) {
+            // 5. Build Context Member
+            $membersContext = $trip->members->map(function ($m) {
                 return [
                     'id' => $m->id,
-                    'name' => $m->user?->name ?? $m->guest_name,
-                    'type' => $m->user_id ? 'user' : 'guest',
+                    'name' => $m->user ? $m->user->name : $m->guest_name,
+                    'first_name' => explode(' ', trim($m->user ? $m->user->name : $m->guest_name))[0]
                 ];
-            })->values()->all();
+            });
 
+            // 6. HIT N8N (Menggunakan URL dari .env)
+            $n8nUrl = env('N8N_SMART_ADD_URL');
+
+            // Payload ke n8n
             $payload = [
-                'draft_id' => $draftId,
-                'trip' => [
-                    'id' => $trip->id,
-                    'name' => $trip->name,
-                    'currency_code' => $trip->currency_code,
-                ],
-                'requested_by_member_id' => $member->id,
-                'note' => $data['note'] ?? null,
-                'image_base64' => $imageBase64,
-                'members' => $members,
+                'query' => $request->input('query') ?? '',
+                'members_context' => $membersContext->toJson(),
+                'image_url' => $imageUrl, // Kirim URL gambar ke n8n (bukan binary biar ringan)
+                'currency' => $trip->currency_code ?? 'IDR'
             ];
 
-            $response = Http::timeout(60)->post($webhookUrl, $payload);
+            // Kirim request (Jika ada gambar, n8n akan download dari image_url)
+            // Atau jika n8n local, kita bisa kirim binary langsung (opsi sebelumnya)
 
-            if ($response->failed()) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'Failed to call Smart Add service.',
-                    'detail' => config('app.debug') ? $response->body() : null,
-                ], 502);
+            // OPSI KIRIM BINARY LANGSUNG (Sesuai kode service Flutter)
+            $http = Http::timeout(60);
+
+            if ($request->hasFile('image')) {
+                $http->attach(
+                    'data', // Key binary n8n
+                    file_get_contents($request->file('image')->getRealPath()),
+                    $request->file('image')->getClientOriginalName()
+                );
             }
 
-            $aiData = $response->json();
+            $response = $http->post($n8nUrl, [
+                'query' => $request->input('query') ?? '',
+                'members_context' => $membersContext->toJson()
+            ]);
 
-            // Normalisasi: pastikan draft_id juga dikembalikan ke Flutter
-            if (is_array($aiData)) {
-                $aiData['draft_id'] = $draftId;
-            } else {
-                $aiData = [
-                    'draft_id' => $draftId,
-                    'raw' => $aiData,
-                ];
+            if ($response->failed()) {
+                \Log::error("N8N Error", ['body' => $response->body()]);
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'AI Processing Failed: ' . $response->status(),
+                    'debug_n8n' => $response->body() // Hapus ini di production
+                ], 502);
             }
 
             return response()->json([
                 'status' => 'success',
-                'data' => $aiData,
+                'data' => $response->json()
             ]);
 
-        } catch (ValidationException $e) {
-
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Validation failed.',
-                'errors' => $e->errors(),
-            ], 422);
-
         } catch (\Exception $e) {
-
+            \Log::error("Controller Error", ['msg' => $e->getMessage()]);
             return response()->json([
                 'status' => 'error',
-                'message' => 'Internal server error.',
-                'detail' => config('app.debug') ? $e->getMessage() : null,
+                'message' => 'Server Error: ' . $e->getMessage()
             ], 500);
         }
     }
@@ -478,22 +480,18 @@ class TransactionController extends Controller
      * Smart Add - simpan transaksi dari hasil AI + mapping user.
      * Endpoint: POST /api/trips/{trip}/transactions/save-ai
      */
-    public function saveAi(
-        Request $request,
-        Trip $trip,
-    ) {
+    public function saveAi(Request $request, Trip $trip)
+    {
         try {
             $user = $request->user();
 
-            // Pastikan user adalah member trip
+            // 1. Validasi Akses
             $creatorMember = $trip->members()->where('user_id', $user->id)->first();
             if (!$creatorMember) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'Forbidden',
-                ], 403);
+                return response()->json(['status' => 'error', 'message' => 'Forbidden'], 403);
             }
 
+            // 2. Validasi Data
             $data = $request->validate([
                 'draft_id' => 'required|string',
                 'title' => 'required|string|max:255',
@@ -502,148 +500,119 @@ class TransactionController extends Controller
                 'date' => 'required|date',
                 'paid_by_member_id' => 'required|integer',
                 'items' => 'required|array|min:1',
-
                 'items.*.name' => 'required|string',
-                'items.*.total' => 'required|numeric|min:0',
-                'items.*.assigned_member_ids' => 'required|array|min:1',
-                'items.*.assigned_member_ids.*' => 'required|integer',
-
+                'items.*.total' => 'required|numeric',
+                'items.*.qty' => 'required|numeric',
+                'items.*.splits' => 'required|array|min:1',
+                'items.*.splits.*.member_id' => 'required|integer',
+                'items.*.splits.*.qty' => 'required|numeric', // qty > 0 = porsi spesifik, 0 = bagi rata
                 'tax' => 'nullable|numeric|min:0',
                 'service_charge' => 'nullable|numeric|min:0',
                 'tax_split_mode' => 'nullable|in:proportional,equal',
             ]);
 
-            // Pastikan semua member_id yang dipakai bener-bener milik trip ini
-            $tripMemberIds = $trip->members()->pluck('id')->toArray();
-
-            if (!in_array($data['paid_by_member_id'], $tripMemberIds, true)) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'Payer is not a member of this trip.',
-                ], 422);
-            }
-
-            foreach ($data['items'] as $item) {
-                foreach ($item['assigned_member_ids'] as $mid) {
-                    if (!in_array($mid, $tripMemberIds, true)) {
-                        return response()->json([
-                            'status' => 'error',
-                            'message' => 'One or more assigned members do not belong to this trip.',
-                        ], 422);
-                    }
-                }
-            }
-
-            $tax = $data['tax'] ?? 0;
-            $serviceCharge = $data['service_charge'] ?? 0;
-            $taxSplitMode = $data['tax_split_mode'] ?? 'proportional';
-
-            // Cek apakah draft_id sudah pernah disimpan → idempotent
+            // 3. Cek Idempotency (Cegah simpan double)
             $existing = Transaction::where('trip_id', $trip->id)
                 ->where('meta->draft_id', $data['draft_id'])
                 ->first();
-
             if ($existing) {
                 return response()->json([
                     'status' => 'success',
                     'data' => $existing->load(['paidBy', 'splits.member']),
-                    'message' => 'Transaction already saved for this draft_id.',
+                    'message' => 'Transaction already saved.',
                 ], 200);
             }
 
-            // Hitung subtotal per member dari items
-            $memberTotals = [];
+            // 4. LOGIC PERHITUNGAN: THE GOLDEN RULE
+            $memberSubtotals = []; // Penampung harga item sebelum pajak
+            $tripMemberIds = $trip->members()->pluck('id')->toArray();
 
             foreach ($data['items'] as $item) {
-                $totalItem = (float) $item['total'];
-                $assigned = $item['assigned_member_ids'];
-                $countAssigned = count($assigned);
+                $totalPrice = (float) $item['total'];
+                $itemQty = (float) $item['qty'];
+                $unitPrice = ($itemQty > 0) ? ($totalPrice / $itemQty) : 0;
 
-                if ($countAssigned < 1 || $totalItem <= 0) {
-                    continue;
-                }
+                $fixedCostTotal = 0;
+                $sharedMemberIds = [];
 
-                $share = $totalItem / $countAssigned;
+                foreach ($item['splits'] as $split) {
+                    $mid = $split['member_id'];
 
-                foreach ($assigned as $mid) {
-                    if (!isset($memberTotals[$mid])) {
-                        $memberTotals[$mid] = 0;
-                    }
-                    $memberTotals[$mid] += $share;
-                }
-            }
+                    // Security: Pastikan member id beneran ada di trip ini
+                    if (!in_array($mid, $tripMemberIds))
+                        continue;
 
-            // Tambahkan tax + service charge
-            $extraTotal = $tax + $serviceCharge;
-
-            if ($extraTotal > 0 && count($memberTotals) > 0) {
-                $memberIds = array_keys($memberTotals);
-
-                if ($taxSplitMode === 'equal') {
-                    $shareExtra = $extraTotal / count($memberIds);
-                    foreach ($memberIds as $mid) {
-                        $memberTotals[$mid] += $shareExtra;
-                    }
-                } else {
-                    // proportional (default)
-                    $subtotalSum = array_sum($memberTotals);
-                    if ($subtotalSum <= 0) {
-                        // fallback ke equal kalau subtotal 0 (kasus aneh)
-                        $shareExtra = $extraTotal / count($memberIds);
-                        foreach ($memberIds as $mid) {
-                            $memberTotals[$mid] += $shareExtra;
-                        }
+                    if ($split['qty'] > 0) {
+                        // Kasus Porsi Spesifik (Isna makan 1, Budi makan 2)
+                        $amount = $split['qty'] * $unitPrice;
+                        $memberSubtotals[$mid] = ($memberSubtotals[$mid] ?? 0) + $amount;
+                        $fixedCostTotal += $amount;
                     } else {
-                        foreach ($memberTotals as $mid => $sub) {
-                            $portion = $sub / $subtotalSum;
-                            $memberTotals[$mid] += $extraTotal * $portion;
-                        }
+                        // Kasus Bagi Rata (qty = 0)
+                        $sharedMemberIds[] = $mid;
+                    }
+                }
+
+                // Bagi sisa harga ke member yang 'bagi rata'
+                if (count($sharedMemberIds) > 0) {
+                    $remainingPrice = max(0, $totalPrice - $fixedCostTotal);
+                    $share = $remainingPrice / count($sharedMemberIds);
+                    foreach ($sharedMemberIds as $mid) {
+                        $memberSubtotals[$mid] = ($memberSubtotals[$mid] ?? 0) + $share;
                     }
                 }
             }
 
-            $totalAmount = array_sum($memberTotals);
+            // 5. TAMBAHKAN PAJAK & SERVICE CHARGE
+            $tax = (float) ($data['tax'] ?? 0);
+            $service = (float) ($data['service_charge'] ?? 0);
+            $extraTotal = $tax + $service;
+            $finalMemberTotals = $memberSubtotals;
 
-            if ($totalAmount <= 0) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'Computed total amount must be greater than zero.',
-                ], 422);
+            if ($extraTotal > 0 && !empty($memberSubtotals)) {
+                $totalSubtotal = array_sum($memberSubtotals);
+                $mode = $data['tax_split_mode'] ?? 'proportional';
+
+                foreach ($memberSubtotals as $mid => $sub) {
+                    if ($mode === 'equal') {
+                        $finalMemberTotals[$mid] += $extraTotal / count($memberSubtotals);
+                    } else {
+                        // Proportional: Makin besar jajanmu, makin besar pajaknya
+                        $portion = ($totalSubtotal > 0) ? ($sub / $totalSubtotal) : (1 / count($memberSubtotals));
+                        $finalMemberTotals[$mid] += $extraTotal * $portion;
+                    }
+                }
             }
 
-            $transaction = DB::transaction(function () use ($trip, $creatorMember, $data, $memberTotals, $totalAmount, $tax, $serviceCharge, $taxSplitMode, ) {
+            // 6. SIMPAN KE DATABASE
+            $transaction = DB::transaction(function () use ($trip, $creatorMember, $data, $finalMemberTotals, $tax, $service) {
                 $tx = Transaction::create([
                     'trip_id' => $trip->id,
                     'created_by_member_id' => $creatorMember->id,
                     'paid_by_member_id' => $data['paid_by_member_id'],
                     'title' => $data['title'],
                     'description' => $data['description'] ?? null,
-                    'emoji' => $data['emoji'] ?? null,
+                    'emoji' => $data['emoji'] ?? '🍽️',
                     'date' => $data['date'],
-                    'total_amount' => $totalAmount,
+                    'total_amount' => array_sum($finalMemberTotals),
                     'split_type' => 'itemized_ai',
                     'meta' => [
                         'draft_id' => $data['draft_id'],
                         'tax' => $tax,
-                        'service_charge' => $serviceCharge,
-                        'tax_split_mode' => $taxSplitMode,
+                        'service_charge' => $service,
+                        'tax_split_mode' => $data['tax_split_mode'] ?? 'proportional',
                     ],
                 ]);
 
-                foreach ($memberTotals as $mid => $amount) {
-                    if ($amount <= 0) {
+                foreach ($finalMemberTotals as $mid => $amount) {
+                    if ($amount <= 0)
                         continue;
-                    }
-
                     TransactionSplit::create([
                         'transaction_id' => $tx->id,
                         'member_id' => $mid,
                         'amount' => $amount,
                     ]);
                 }
-
-                // Recalculate balances
-                // $balanceService->recalculate($trip);
 
                 return $tx;
             });
@@ -653,16 +622,7 @@ class TransactionController extends Controller
                 'data' => $transaction->load(['paidBy', 'splits.member']),
             ], 201);
 
-        } catch (ValidationException $e) {
-
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Validation failed.',
-                'errors' => $e->errors(),
-            ], 422);
-
         } catch (\Exception $e) {
-
             return response()->json([
                 'status' => 'error',
                 'message' => 'Internal server error.',

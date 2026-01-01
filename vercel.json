@@ -1,0 +1,36 @@
+{
+    "version": 2,
+    "builds": [
+        { "src": "/api/index.php", "use": "vercel-php" },
+        { "src": "/public/**", "use": "@vercel/static" }
+    ],
+    
+    "env": {
+        "APP_NAME": "Triva App",
+        "APP_ENV": "production",
+        "APP_DEBUG": "true",
+        "APP_URL": "https://triva-api.vercel.app",
+        "APP_KEY" : "base64:MlL8UF2g4MgaHkGxsNQnEtxZ+H/YqjIstCwJrBOThsQ=",
+
+        "DB_CONNECTION": "mysql",
+        "DB_HOST": "dwsifu.h.filess.io",
+        "DB_PORT": "3307",
+        "DB_DATABASE": "triva_api_risetheeof",
+        "DB_USERNAME": "triva_api_risetheeof",
+        "DB_PASSWORD": "11a1edf3db54ad30da3a024ab692d461d35b886b",
+        "N8N_SMART_ADD_URL" : "http://localhost:5678/webhook-test/scan-receipt",
+
+        "VERCEL_DEMO_MODE": "true",
+        "APP_CONFIG_CACHE": "/tmp/config.php",
+        "APP_EVENTS_CACHE": "/tmp/events.php",
+        "APP_PACKAGES_CACHE": "/tmp/packages.php",
+        "APP_ROUTES_CACHE": "/tmp/routes.php",
+        "APP_SERVICES_CACHE": "/tmp/services.php",
+        "CACHE_DRIVER": "array",
+        "LOG_CHANNEL": "stderr",
+        "SESSION_DRIVER": "array",
+        "VIEW_COMPILED_PATH": "/tmp/views",
+        "SSR_TEMP_PATH": "/tmp/ssr",
+        "NODE_PATH": "node"
+    }
+}

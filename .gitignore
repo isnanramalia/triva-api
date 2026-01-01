@@ -22,3 +22,8 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+.vercel
+.env*.local
+.env_backup
+.env_backup2

@@ -505,31 +505,35 @@ class TransactionController extends Controller
                 'items.*.qty' => 'required|numeric',
                 'items.*.splits' => 'required|array|min:1',
                 'items.*.splits.*.member_id' => 'required|integer',
-                'items.*.splits.*.qty' => 'required|numeric', // qty > 0 = porsi spesifik, 0 = bagi rata
+                'items.*.splits.*.qty' => 'required|numeric',
                 'tax' => 'nullable|numeric|min:0',
                 'service_charge' => 'nullable|numeric|min:0',
                 'tax_split_mode' => 'nullable|in:proportional,equal',
             ]);
 
-            // 3. Cek Idempotency (Cegah simpan double)
+            // 3. Cek Idempotency (Cegah simpan double kalau user klik 2x)
             $existing = Transaction::where('trip_id', $trip->id)
                 ->where('meta->draft_id', $data['draft_id'])
                 ->first();
+
             if ($existing) {
                 return response()->json([
                     'status' => 'success',
-                    'data' => $existing->load(['paidBy', 'splits.member']),
+                    'data' => $existing->load(['paidBy', 'splits.member', 'items']), // Load items juga
                     'message' => 'Transaction already saved.',
                 ], 200);
             }
 
-            // 4. LOGIC PERHITUNGAN: THE GOLDEN RULE
-            $memberSubtotals = []; // Penampung harga item sebelum pajak
+            // 4. LOGIC PERHITUNGAN (SPLIT BILL)
+            $memberSubtotals = [];
             $tripMemberIds = $trip->members()->pluck('id')->toArray();
 
+            // Kita butuh loop ini untuk menghitung total hutang per member (Splits)
             foreach ($data['items'] as $item) {
                 $totalPrice = (float) $item['total'];
                 $itemQty = (float) $item['qty'];
+
+                // Unit Price = Total / Qty
                 $unitPrice = ($itemQty > 0) ? ($totalPrice / $itemQty) : 0;
 
                 $fixedCostTotal = 0;
@@ -538,22 +542,21 @@ class TransactionController extends Controller
                 foreach ($item['splits'] as $split) {
                     $mid = $split['member_id'];
 
-                    // Security: Pastikan member id beneran ada di trip ini
                     if (!in_array($mid, $tripMemberIds))
                         continue;
 
                     if ($split['qty'] > 0) {
-                        // Kasus Porsi Spesifik (Isna makan 1, Budi makan 2)
+                        // Bayar sesuai porsi
                         $amount = $split['qty'] * $unitPrice;
                         $memberSubtotals[$mid] = ($memberSubtotals[$mid] ?? 0) + $amount;
                         $fixedCostTotal += $amount;
                     } else {
-                        // Kasus Bagi Rata (qty = 0)
+                        // Ikut bagi rata sisa
                         $sharedMemberIds[] = $mid;
                     }
                 }
 
-                // Bagi sisa harga ke member yang 'bagi rata'
+                // Bagi rata sisa harga item (jika ada yg qty=0)
                 if (count($sharedMemberIds) > 0) {
                     $remainingPrice = max(0, $totalPrice - $fixedCostTotal);
                     $share = $remainingPrice / count($sharedMemberIds);
@@ -563,7 +566,7 @@ class TransactionController extends Controller
                 }
             }
 
-            // 5. TAMBAHKAN PAJAK & SERVICE CHARGE
+            // 5. TAMBAHKAN PAJAK & SERVICE CHARGE KE SPLIT
             $tax = (float) ($data['tax'] ?? 0);
             $service = (float) ($data['service_charge'] ?? 0);
             $extraTotal = $tax + $service;
@@ -577,15 +580,16 @@ class TransactionController extends Controller
                     if ($mode === 'equal') {
                         $finalMemberTotals[$mid] += $extraTotal / count($memberSubtotals);
                     } else {
-                        // Proportional: Makin besar jajanmu, makin besar pajaknya
                         $portion = ($totalSubtotal > 0) ? ($sub / $totalSubtotal) : (1 / count($memberSubtotals));
                         $finalMemberTotals[$mid] += $extraTotal * $portion;
                     }
                 }
             }
 
-            // 6. SIMPAN KE DATABASE
+            // 6. SIMPAN KE DATABASE (DB TRANSACTION)
             $transaction = DB::transaction(function () use ($trip, $creatorMember, $data, $finalMemberTotals, $tax, $service) {
+
+                // A. Simpan Header Transaksi
                 $tx = Transaction::create([
                     'trip_id' => $trip->id,
                     'created_by_member_id' => $creatorMember->id,
@@ -604,9 +608,27 @@ class TransactionController extends Controller
                     ],
                 ]);
 
+                // B. Simpan Transaction Items (INI YANG KURANG SEBELUMNYA) ✅
+                foreach ($data['items'] as $itemData) {
+                    $totalPrice = (float) $itemData['total'];
+                    $qty = (float) $itemData['qty'];
+                    $unitPrice = ($qty > 0) ? ($totalPrice / $qty) : 0;
+
+                    // Gunakan Model TransactionItem
+                    \App\Models\TransactionItem::create([
+                        'transaction_id' => $tx->id,
+                        'name' => $itemData['name'],
+                        'unit_price' => $unitPrice,
+                        'qty' => $qty,
+                        'raw_data' => $itemData['splits'] ?? [], // Simpan detail siapa makan apa di raw_data (opsional tapi berguna)
+                    ]);
+                }
+
+                // C. Simpan Transaction Splits (Siapa hutang berapa secara total)
                 foreach ($finalMemberTotals as $mid => $amount) {
-                    if ($amount <= 0)
-                        continue;
+                    if ($amount <= 0.01)
+                        continue; // Skip kalau 0
+
                     TransactionSplit::create([
                         'transaction_id' => $tx->id,
                         'member_id' => $mid,
@@ -617,11 +639,19 @@ class TransactionController extends Controller
                 return $tx;
             });
 
+            // 7. Return Response (Include Items)
             return response()->json([
                 'status' => 'success',
-                'data' => $transaction->load(['paidBy', 'splits.member']),
+                'message' => 'Transaction saved successfully',
+                'data' => $transaction->load(['paidBy', 'splits.member', 'items']), // Load items agar tampil di response
             ], 201);
 
+        } catch (ValidationException $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Validation failed',
+                'errors' => $e->errors(),
+            ], 422);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 'error',
